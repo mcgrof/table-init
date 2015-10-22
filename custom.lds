@@ -59,7 +59,7 @@ SECTIONS
     *(.text.startup .text.startup.*)
     *(.text.hot .text.hot.*)
     *(.text .stub .text.* .gnu.linkonce.t.*)
-    *(SORT(.tbl.*))
+    *(SORT_BY_INIT_PRIORITY(.tbl.*))
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
   }
