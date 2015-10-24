@@ -6,7 +6,12 @@ static void init_y(void) {
 	sleep(1);
 }
 
+static int detect_y(void) {
+	return 1;
+}
+
 struct init_fn y_init_fn __init_fn(INIT_EARLY) = {
+	.detect = detect_y,
 	.initialise = init_y,
 	.name = "Y thing",
 };
