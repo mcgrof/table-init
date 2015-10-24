@@ -3,22 +3,6 @@
 #include "tables.h"
 #include "init.h"
 
-static int early_init_y(void) {
-	sleep(1);
-
-	return 0;
-}
-
-static int detect_y(void) {
-	return 1;
-}
-
-struct init_fn y_init_fn __init_fn(INIT_EARLY) = {
-	.detect = detect_y,
-	.early_init = early_init_y,
-	.name = "Y thing",
-};
-
 extern struct init_fn __tbl[], __tbl_end[];
 
 int main(void)

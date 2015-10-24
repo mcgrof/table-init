@@ -21,8 +21,9 @@ main: \
 	tables.o \
 	memory.o \
 	foo.o\
-	bar.o\
 	init.o \
+	pci.o \
+	driver.o \
 	main.o
 	$(NQ) '  CC  ' $@
 	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^
