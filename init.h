@@ -8,7 +8,7 @@
  */
 struct init_fn {                                                                
 	void (* initialise) (void);
-	//const char *name;
+	const char *name;
 };
 
 /** Initialisation function table */

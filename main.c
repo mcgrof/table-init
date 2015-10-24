@@ -3,14 +3,12 @@
 #include "init.h"
 
 static void init_y(void) {
-	printf("y is about to start\n");
 	sleep(1);
-	printf("y started!\n");
 }
 
 struct init_fn y_init_fn __init_fn(INIT_EARLY) = {
 	.initialise = init_y,
-	//.name = "Y thing",
+	.name = "Y thing",
 };
 
 int main(void)

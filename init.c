@@ -3,14 +3,12 @@
 #include "init.h"
 
 static void init_x(void) {
-	printf("x is about to start\n");
 	sleep(1);
-	printf("x started!\n");
 }
 
 struct init_fn x_init_fn __init_fn(INIT_EARLY) = {
 	.initialise = init_x,
-	//.name = "X thing",
+	.name = "X thing",
 };
 
 int init(void)
@@ -22,8 +20,9 @@ int init(void)
 	printf("Number of init entries: %d\n", num_inits);
 
 	for_each_table_entry (init_fn, INIT_FNS) {
-		//printf("Initializing %s ...", init_fn->name);
+		printf("Initializing %s ...\n", init_fn->name);
 		init_fn->initialise();
+		printf("Completed initializing %s !\n", init_fn->name);
 	}
 
 	return 0;
