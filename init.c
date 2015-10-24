@@ -6,7 +6,7 @@
 static int early_init_x(void) {
 	sleep(1);
 
-	return -EINVAL;
+	return 0;
 }
 
 static int detect_x(void) {
