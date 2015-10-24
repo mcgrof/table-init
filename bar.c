@@ -2,8 +2,10 @@
 #include <unistd.h>
 #include "init.h"
 
-static void init_bar(void) {
+static int early_init_bar(void) {
 	sleep(2);
+
+	return 0;
 }
 
 static int detect_bar(void) {
@@ -12,6 +14,6 @@ static int detect_bar(void) {
 
 struct init_fn bar_init_fn __init_fn (INIT_NORMAL) = {
 	.detect = detect_bar,
-	.initialise = init_bar,
+	.early_init = early_init_bar,
 	.name = "Bar thing",
 };

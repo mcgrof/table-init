@@ -2,8 +2,10 @@
 #include <unistd.h>
 #include "init.h"
 
-static void init_y(void) {
+static int early_init_y(void) {
 	sleep(1);
+
+	return 0;
 }
 
 static int detect_y(void) {
@@ -12,7 +14,7 @@ static int detect_y(void) {
 
 struct init_fn y_init_fn __init_fn(INIT_EARLY) = {
 	.detect = detect_y,
-	.initialise = init_y,
+	.early_init = early_init_y,
 	.name = "Y thing",
 };
 
@@ -21,11 +23,7 @@ int main(void)
 	int ret;
 
 	printf("Initializing world\n");
-	/*
-	 * XXX: capture ret value on some levels of init which
-	 * are critical.
-	 */
-	ret = init();
+	ret = early_init();
 
 	return ret;
 }

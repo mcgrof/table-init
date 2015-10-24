@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include "init.h"
 
-static void init_x(void) {
+static int early_init_x(void) {
 	sleep(1);
+
+	return -EINVAL;
 }
 
 static int detect_x(void) {
@@ -12,12 +15,14 @@ static int detect_x(void) {
 
 struct init_fn x_init_fn __init_fn(INIT_EARLY) = {
 	.detect = detect_x,
-	.initialise = init_x,
+	.early_init = early_init_x,
 	.name = "X thing",
+	.critical = true,
 };
 
-int init(void)
+int early_init(void)
 {
+	int ret;
 	struct init_fn *init_fn;                                                
 
 	unsigned int num_inits = table_num_entries(INIT_FNS);
@@ -27,8 +32,14 @@ int init(void)
 	for_each_table_entry (init_fn, INIT_FNS) {
 		if (init_fn->detect && init_fn->detect() > 0) {
 			printf("Initializing %s ...\n", init_fn->name);
-			init_fn->initialise();
-			printf("Completed initializing %s !\n", init_fn->name);
+			ret = init_fn->early_init();
+			if (ret) {
+				if (init_fn->critical)
+					return ret;
+				printf("Failed to initialize %s on early init, but its not critical\n", init_fn->name);
+
+			} else
+				printf("Completed initializing %s !\n", init_fn->name);
 		}
 	}
 

@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "tables.h"
 
 /**
@@ -8,7 +9,8 @@
  */
 struct init_fn {                                                                
 	int (* detect)(void);
-	void (* initialise) (void);
+	int (* early_init)(void);
+	bool critical;
 	const char *name;
 };
 
@@ -23,4 +25,4 @@ struct init_fn {
 #define INIT_CONSOLE	03	/**< Console initialisation */
 #define INIT_NORMAL	04	/**< Normal initialisation */
 
-int init(void);
+int early_init(void);
