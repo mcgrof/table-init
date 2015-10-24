@@ -59,6 +59,7 @@ SECTIONS
     *(.text.startup .text.startup.*)
     *(.text.hot .text.hot.*)
     *(.text .stub .text.* .gnu.linkonce.t.*)
+    *(SORT(.tbl.*))
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
   }
@@ -151,8 +152,6 @@ SECTIONS
   .data1          : { *(.data1) }
   _edata = .; PROVIDE (edata = .);
   . = .;
-
-  .tbl            : { *(SORT(.tbl.*)) }
 
   __bss_start = .;
   .bss            :
