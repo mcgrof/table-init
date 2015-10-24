@@ -25,5 +25,12 @@ int main(void)
 	printf("Initializing world\n");
 	ret = early_init();
 
+	if (ret) {
+		printf("Early init failed\n");
+		return ret;
+	}
+
+	ret = late_init();
+
 	return ret;
 }

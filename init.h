@@ -8,10 +8,14 @@
  * call to init().
  */
 struct init_fn {                                                                
-	int (* detect)(void);
-	int (* early_init)(void);
+	int (*detect)(void);
+	int (*early_init)(void); /* No memory allocate available. */
+	int (*late_init)(void); /* Yes, can allocate memory. */
 	bool critical;
 	const char *name;
+#define INIT_FINISH_IF_DETECTED (1<<0)
+#define INIT_DETECTED           (1<<1)
+	int flags;
 };
 
 /** Initialisation function table */
@@ -26,3 +30,4 @@ struct init_fn {
 #define INIT_NORMAL	04	/**< Normal initialisation */
 
 int early_init(void);
+int late_init(void);
