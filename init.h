@@ -7,6 +7,7 @@
  * call to init().
  */
 struct init_fn {                                                                
+	int (* detect)(void);
 	void (* initialise) (void);
 	const char *name;
 };
