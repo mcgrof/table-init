@@ -9,6 +9,7 @@
  */
 struct init_fn {                                                                
 	int (*detect)(void);
+	int (*depend)(void);
 	int (*early_init)(void); /* No memory allocate available. */
 	int (*late_init)(void); /* Yes, can allocate memory. */
 	bool critical;
@@ -31,3 +32,7 @@ struct init_fn {
 
 int early_init(void);
 int late_init(void);
+void sort_table(struct init_fn *start,
+		      struct init_fn *finish);
+void check_table_entries(struct init_fn *start,
+			 struct init_fn *finish);

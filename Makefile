@@ -18,6 +18,7 @@ all: main
 	$(Q)$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 main: \
+	tables.o \
 	memory.o \
 	foo.o\
 	bar.o\

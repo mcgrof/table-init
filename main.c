@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include "tables.h"
 #include "init.h"
 
 static int early_init_y(void) {
@@ -18,11 +19,17 @@ struct init_fn y_init_fn __init_fn(INIT_EARLY) = {
 	.name = "Y thing",
 };
 
+extern struct init_fn __tbl[], __tbl_end[];
+
 int main(void)
 {
 	int ret;
 
 	printf("Initializing world\n");
+
+	sort_table(__tbl, __tbl_end);
+	check_table_entries(__tbl, __tbl_end);
+
 	ret = early_init();
 
 	if (ret) {

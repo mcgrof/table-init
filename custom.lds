@@ -160,7 +160,11 @@ SECTIONS
    * only be available on newer binutils though, we should
    * look into the pros/cons of both.
    */
-  .tbl            : { *(SORT_BY_INIT_PRIORITY(.tbl.*)) }
+  .tbl            : {
+    __tbl = .;
+    *(SORT_BY_INIT_PRIORITY(.tbl.*))
+    __tbl_end = .;
+  }
   . = ALIGN(8);
 
   __bss_start = .;
