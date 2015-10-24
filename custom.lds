@@ -59,7 +59,6 @@ SECTIONS
     *(.text.startup .text.startup.*)
     *(.text.hot .text.hot.*)
     *(.text .stub .text.* .gnu.linkonce.t.*)
-    *(SORT_BY_INIT_PRIORITY(.tbl.*))
     /* .gnu.warning sections are handled specially by elf32.em.  */
     *(.gnu.warning)
   }
@@ -152,6 +151,17 @@ SECTIONS
   .data1          : { *(.data1) }
   _edata = .; PROVIDE (edata = .);
   . = .;
+
+  /*
+   * XXX: Linux already uses SORT() on vmlinux.lds,
+   * but SORT_BY_INIT_PRIORITY() seems more well suited
+   * for being able to annotate priorities, as SORT() seems
+   * to sort lexicographically. SORT_BY_INIT_PRIORITY() may
+   * only be available on newer binutils though, we should
+   * look into the pros/cons of both.
+   */
+  .tbl            : { *(SORT_BY_INIT_PRIORITY(.tbl.*)) }
+  . = ALIGN(8);
 
   __bss_start = .;
   .bss            :
