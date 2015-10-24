@@ -1,6 +1,5 @@
 CFLAGS += -O2 -g
 CFLAGS += -std=gnu99 -Wall -Werror
-#CFLAGS += -Wl,--emit-relocs
 
 CFLAGS +=-Wl,-Tcustom.lds
 
