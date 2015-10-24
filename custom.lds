@@ -152,7 +152,7 @@ SECTIONS
   _edata = .; PROVIDE (edata = .);
   . = .;
 
-  .tbl          : { *(.tbl.*) }
+  .tbl            : { *(SORT(.tbl.*)) }
 
   __bss_start = .;
   .bss            :
