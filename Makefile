@@ -20,7 +20,7 @@ all: main
 main: \
 	sort-init.o \
 	memory.o \
-	foo.o\
+	kasan.o\
 	init.o \
 	pci.o \
 	driver.o \
