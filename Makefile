@@ -1,7 +1,7 @@
 CFLAGS += -O2 -g
 CFLAGS += -std=gnu99 -Wall -Werror
 
-CFLAGS +=-Wl,-Tcustom.lds
+CFLAGS +=-Wl,-Tcustom.lds.S
 
 ifeq ($(V),1)
 	Q=
