@@ -1,0 +1,37 @@
+
+Compile
+=======
+
+Run:
+	make
+
+Simulated boots
+==============
+
+This programs simulates boot in on both bare metal and xen.
+The goal of the code is to illustrate an issue of dead code
+and how we can fix this.
+
+Emulate bare metal boot:
+
+./main
+
+Emulate xen boot:
+
+./main -x
+
+TODO
+====
+
+You should see that using './main -x' fails to boot right now.
+We are not sure when this will be fixed. Our goal is to illustrate
+how to fix this using the infrastructure we've developed.
+
+Once we have a xen hook for init routines we can show how we can
+block kasan from running at all as its not yet ready for xen but
+also that we can use this stuff to later also de-activate code
+we know should *not run at all* on Xen. For instance the memory
+setup code. Right now we'd have code split up in two different
+places, or checks with things like pv_enabled() on Linux -- in
+this code booting_xen() is used. We can replace these conditionals
+as well later with a proper init structure annotation.

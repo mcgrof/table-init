@@ -12,6 +12,10 @@ static int early_xen_init_driver(void) {
 }
 
 static int detect_xen_driver(void) {
+	/* XXX: replace with a hook annotation, this is fragile as
+	 * it requires the developer to know and it means some folks
+	 * may not be setting these checks elsewhere.
+	 */
 	if (!booting_xen())
 		return 0;
 
