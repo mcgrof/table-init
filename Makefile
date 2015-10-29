@@ -17,14 +17,16 @@ all: main
 	$(NQ) '  CC  ' $@
 	$(Q)$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
-main: \
-	sort-init.o \
+
+OBJS =  sort-init.o \
 	memory.o \
 	kasan.o\
 	init.o \
 	pci.o \
 	driver.o \
 	main.o
+
+main: $(OBJS)
 	$(NQ) '  CC  ' $@
 	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^
 
