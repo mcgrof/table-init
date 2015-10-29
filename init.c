@@ -19,8 +19,10 @@ int early_init(void)
 			printf("Initializing %s ...\n", init_fn->name);
 			ret = init_fn->early_init();
 			if (ret) {
-				if (init_fn->critical)
+				if (init_fn->critical) {
+					printf("Failed to initialize %s on early init\n", init_fn->name);
 					return ret;
+				}
 				printf("Failed to initialize %s on early init, but its not critical\n", init_fn->name);
 
 			} else
@@ -43,8 +45,10 @@ int late_init(void)
 			printf("Running late init for %s ...\n", init_fn->name);
 			ret = init_fn->late_init();
 			if (ret) {
-				if (init_fn->critical)
+				if (init_fn->critical) {
+					printf("Failed to initialize %s on late init\n", init_fn->name);
 					return ret;
+				}
 				printf("Failed to initialize %s on late init, but its not critical\n", init_fn->name);
 
 			} else

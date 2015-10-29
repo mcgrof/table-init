@@ -24,6 +24,8 @@ OBJS =  sort-init.o \
 	init.o \
 	pci.o \
 	driver.o \
+	xen.o \
+	xen-driver.o \
 	main.o
 
 main: $(OBJS)
