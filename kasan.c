@@ -19,7 +19,7 @@ static int init_kasan(void) {
 	sleep(1);
 
 	if (!is_kasan_setup())
-		return -EINVAL;
+		return -EOPNOTSUPP;
 
 	return 0;
 }
