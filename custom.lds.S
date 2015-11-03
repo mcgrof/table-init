@@ -152,17 +152,9 @@ SECTIONS
   _edata = .; PROVIDE (edata = .);
   . = .;
 
-  /*
-   * XXX: Linux already uses SORT() on vmlinux.lds,
-   * but SORT_BY_INIT_PRIORITY() seems more well suited
-   * for being able to annotate priorities, as SORT() seems
-   * to sort lexicographically. SORT_BY_INIT_PRIORITY() may
-   * only be available on newer binutils though, we should
-   * look into the pros/cons of both.
-   */
   .tbl            : {
     __tbl = .;
-    *(SORT_BY_INIT_PRIORITY(.tbl.*))
+    *(SORT(.tbl.*))
     __tbl_end = .;
   }
   . = ALIGN(8);
