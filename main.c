@@ -23,7 +23,7 @@ int main(int arg, char *argc[])
 	int ret;
 
 	if (arg > 1)
-		xen_start();
+		startup_xen();
 	else
 		bare_metal_start();
 

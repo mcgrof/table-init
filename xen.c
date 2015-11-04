@@ -8,7 +8,7 @@ bool booting_xen(void)
 	return __booting_xen;
 }
 
-int xen_start(void)
+int startup_xen(void)
 {
 	__booting_xen = true;
 
