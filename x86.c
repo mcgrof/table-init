@@ -33,9 +33,13 @@ static int x86_64_start_kernel(void)
 	return x86_64_start_reservations();
 }
 
-/* x86 specific */
 int startup_64(void)
 {
 	printf("Initializing x86 bare metal world\n");
 	return x86_64_start_kernel();
+}
+
+void setup_arch(void)
+{
+	setup_arch_init();
 }

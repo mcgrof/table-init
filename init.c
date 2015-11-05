@@ -58,3 +58,15 @@ int late_init(void)
 
 	return 0;
 }
+
+void setup_arch_init(void)
+{
+	struct init_fn *init_fn;
+
+	for_each_table_entry(init_fn, INIT_FNS) {
+		if ((init_fn->flags & INIT_DETECTED) && init_fn->setup_arch) {
+			printf("Running setup_arch for %s ...\n", init_fn->name);
+			init_fn->setup_arch();
+		}
+	}
+}

@@ -12,6 +12,7 @@ struct init_fn {
 	int (*depend)(void);
 	int (*early_init)(void); /* No memory allocate available. */
 	int (*late_init)(void); /* Yes, can allocate memory. */
+	void (*setup_arch)(void);
 	bool critical;
 	const char *name;
 #define INIT_FINISH_IF_DETECTED (1<<0)
@@ -32,6 +33,8 @@ struct init_fn {
 
 int early_init(void);
 int late_init(void);
+void setup_arch_init(void);
+
 void sort_table(struct init_fn *start,
 		      struct init_fn *finish);
 void check_table_entries(struct init_fn *start,
