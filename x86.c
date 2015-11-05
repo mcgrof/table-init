@@ -17,8 +17,8 @@ static int x86_64_start_kernel(void)
 {
 	int ret;
 
-	sort_table(__tbl, __tbl_end);                                           
-	check_table_entries(__tbl, __tbl_end); 
+	sort_table(__tbl, __tbl_end);
+	check_table_entries(__tbl, __tbl_end);
 
 	ret = early_init();
 	if (ret) {
@@ -42,4 +42,6 @@ int startup_64(void)
 void setup_arch(void)
 {
 	setup_arch_init();
+	if (is_kasan_setup())
+		setup_arch_kasan();
 }

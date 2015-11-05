@@ -19,8 +19,8 @@ int startup_xen(void)
 
 	__booting_xen = true;
 
-	sort_table(__tbl, __tbl_end);                                           
-	check_table_entries(__tbl, __tbl_end); 
+	sort_table(__tbl, __tbl_end);
+	check_table_entries(__tbl, __tbl_end);
 
 	ret = early_init();
 	if (ret) {
