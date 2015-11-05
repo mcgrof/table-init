@@ -19,6 +19,8 @@ all: main
 
 
 OBJS =  sort-init.o \
+	start_kernel.o \
+	x86.o \
 	memory.o \
 	kasan.o\
 	init.o \

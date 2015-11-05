@@ -1,23 +1,21 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "init.h"
+#include <unistd.h>
 #include "tables.h"
-#include "x86.h"
+#include "init.h"
+#include "start_kernel.h"
+#include "kasan.h"
 
 extern struct init_fn __tbl[], __tbl_end[];
 
-static bool __booting_xen = false;
-
-bool booting_xen(void)
+int x86_64_start_reservations(void)
 {
-	return __booting_xen;
+	return start_kernel();
 }
 
-int startup_xen(void)
+static int x86_64_start_kernel(void)
 {
 	int ret;
-
-	__booting_xen = true;
 
 	sort_table(__tbl, __tbl_end);                                           
 	check_table_entries(__tbl, __tbl_end); 
@@ -28,7 +26,16 @@ int startup_xen(void)
 		return ret;
 	}
 
-	printf("Initializing Xen guest\n");
+	ret = kasan_early_init();
+	if (ret)
+		return ret;
 
 	return x86_64_start_reservations();
+}
+
+/* x86 specific */
+int startup_64(void)
+{
+	printf("Initializing x86 bare metal world\n");
+	return x86_64_start_kernel();
 }
