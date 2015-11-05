@@ -8,12 +8,12 @@
 
 extern struct init_fn __tbl[], __tbl_end[];
 
-int bare_metal_start(void)
+static int startup_64(void)
 {
 	int ret;
 
 	printf("Initializing bare metal world\n");
-	ret = setup_kasan_bare_metal();
+	ret = kasan_early_init();
 
 	return ret;
 }
@@ -25,7 +25,7 @@ int main(int arg, char *argc[])
 	if (arg > 1)
 		startup_xen();
 	else
-		bare_metal_start();
+		startup_64();
 
 	sort_table(__tbl, __tbl_end);
 	check_table_entries(__tbl, __tbl_end);

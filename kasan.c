@@ -5,7 +5,7 @@
 
 static bool __is_kasan_setup = false;
 
-int setup_kasan_bare_metal(void) {
+int kasan_early_init(void) {
 	__is_kasan_setup = true;
 	return 0;
 }

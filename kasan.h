@@ -1,4 +1,4 @@
 #include <stdbool.h>
 
-int setup_kasan_bare_metal(void);
+int kasan_early_init(void);
 bool is_kasan_setup(void);
