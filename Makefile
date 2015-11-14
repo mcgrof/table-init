@@ -11,12 +11,15 @@ else
 	NQ=@echo
 endif
 
-all: main
+all: main parse-bzimage
 
 %.o: %.c *.h
 	$(NQ) '  CC  ' $@
 	$(Q)$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
+parse-bzimage: parse-bzimage.c
+	$(NQ) '  CC  ' $@
+	$(Q)$(CC) -c -o $@ $<
 
 OBJS =  sort-init.o \
 	start_kernel.o \
@@ -35,4 +38,4 @@ main: $(OBJS)
 	$(Q)$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f main *.o
+	rm -f main parse-bzimage *.o

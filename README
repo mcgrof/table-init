@@ -20,6 +20,43 @@ Emulate xen boot:
 
 ./main -x
 
+x86 bzimage parser
+================
+
+An x86 image parser has been added to aid the integration requirements
+of using futher boot_params for dead code concerns. Example usage:
+
+./parse-bzimage ~/linux/arch/x86/boot/bzImage 
+kernel: /home/mcgrof/linux/arch/x86/boot/bzImage
+kernel size:    5668000 bytes
+Going to parse kernel...
+
+Xen Expects:    0x53726448
+Qemu Expects:   0x53726448
+On image:       0x53726448
+
+
+bzImage protocol Version: v2.13
+Xen hdr->version:       525
+Qemu protocol:          525
+Qemu VERSION(2,8):      520
+
+-------------------------------------------------
+Boot protocol 2.07:     0x0207  (supports hardware_subarch)
+Boot protocol 2.08:     0x0208
+Boot protocol 2.09:     0x0209
+Boot protocol 2.10:     0x020a
+Boot protocol 2.11:     0x020b
+Boot protocol 2.12:     0x020c
+Boot protocol 2.13:     0x020d
+
+
+Member                                  Offset  Expected        Match
+-------------------------------------------------------------------------
+setup_header->loadflags                 0x0211  0x0211          YES
+setup_header->hardware_subarch          0x023c
+setup_header->hardware_subarch_data     0x0240
+
 TODO
 ====
 
@@ -35,3 +72,4 @@ setup code. Right now we'd have code split up in two different
 places, or checks with things like pv_enabled() on Linux -- in
 this code booting_xen() is used. We can replace these conditionals
 as well later with a proper init structure annotation.
+
