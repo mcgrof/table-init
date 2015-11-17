@@ -19,7 +19,7 @@ all: main parse-bzimage
 
 parse-bzimage: parse-bzimage.c
 	$(NQ) '  CC  ' $@
-	$(Q)$(CC) -c -o $@ $<
+	$(Q)$(CC) -o $@ $<
 
 OBJS =  sort-init.o \
 	start_kernel.o \
