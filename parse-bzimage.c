@@ -125,6 +125,19 @@ int main(int argc, char *argv[])
 		goto err_out;
 	}
 
+	fprintf(stdout, "-------------------------------------------------\n");
+	if (hdr->setup_sects > 15) {
+		char kver_str[128];
+
+		fseek(f, hdr->kernel_version + 0x200, SEEK_SET);
+		fread(kver_str, 128, 1, f);
+		kver_str[127] = '\0';
+		fprintf(stdout, "Kernel version: %s\n", kver_str);
+	} else
+		fprintf(stdout, "No kernel version information available\n");
+
+	fprintf(stdout, "-------------------------------------------------\n");
+
 	fprintf(stdout, "Xen Expects:\t0x%08x\n", hdr_int);
 	fprintf(stdout, "Qemu Expects:\t0x%08x\n", 0x53726448);
 	fprintf(stdout, "On image:\t0x%08x\n", hdr->header);
