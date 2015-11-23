@@ -21,6 +21,7 @@ struct init_fn pci_init_fn __init_fn(INIT_NORMAL) = {
 	.detect = detect_pci,
 	.early_init = early_init_pci,
 	.name = "PCI buses",
+	.critical = true,
 	.supp_hardware_subarch =
 			X86_SUBARCH_PC |
 			X86_SUBARCH_XEN,
