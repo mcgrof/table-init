@@ -10,7 +10,7 @@
 static int early_init_pci(void) {
 	sleep(1);
 
-	return -EINVAL;
+	return 0;
 }
 
 int detect_pci(void) {
