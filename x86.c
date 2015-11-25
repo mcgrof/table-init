@@ -66,6 +66,5 @@ int startup_64(void)
 void setup_arch(void)
 {
 	setup_arch_init();
-	if (is_kasan_setup())
-		setup_arch_kasan();
+	kasan_init();
 }

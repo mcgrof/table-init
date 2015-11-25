@@ -1,5 +1,5 @@
 #include <stdbool.h>
 
 int kasan_early_init(void);
-void setup_arch_kasan(void);
+int kasan_init(void);
 bool is_kasan_setup(void);
