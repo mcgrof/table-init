@@ -1,3 +1,6 @@
+#ifndef __BOOTPARAM_H
+#define __BOOTPARAM_H
+
 #include <linux/types.h>
 
 struct setup_header {
@@ -16,3 +19,14 @@ enum {
 	X86_SUBARCH_CE4100,
 	X86_NR_SUBARCHS,
 };
+
+#define X86_SUBARCH_ALL_SUBARCHS 	\
+	(				\
+	BIT(X86_SUBARCH_PC) |		\
+	BIT(X86_SUBARCH_LGUEST) |	\
+	BIT(X86_SUBARCH_XEN) |		\
+	BIT(X86_SUBARCH_INTEL_MID) |	\
+	BIT(X86_SUBARCH_CE4100)		\
+	)
+
+#endif /* __BOOTPARAM_H */

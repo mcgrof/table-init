@@ -11,19 +11,8 @@ static int early_xen_init_driver(void) {
 	return 0;
 }
 
-static int detect_xen_driver(void) {
-	/* XXX: replace with a hook annotation, this is fragile as
-	 * it requires the developer to know and it means some folks
-	 * may not be setting these checks elsewhere.
-	 */
-	if (!booting_xen())
-		return 0;
-
-	return 1;
-}
-
 struct init_fn driver_xen_init_fn __init_fn(INIT_NORMAL) = {
-	.detect = detect_xen_driver,
+	.supp_hardware_subarch = BIT(X86_SUBARCH_XEN),
 	.depend = detect_pci,
 	.early_init = early_xen_init_driver,
 	.name = "Xen Driver",

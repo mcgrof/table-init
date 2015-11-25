@@ -50,10 +50,6 @@ static int x86_64_start_kernel(void)
 		return ret;
 	}
 
-	ret = kasan_early_init();
-	if (ret)
-		return ret;
-
 	return x86_64_start_reservations();
 }
 
@@ -66,5 +62,4 @@ int startup_64(void)
 void setup_arch(void)
 {
 	setup_arch_init();
-	kasan_init();
 }

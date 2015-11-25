@@ -15,6 +15,7 @@ static int detect_memory(void) {
 }
 
 struct init_fn memory_init_fn __init_fn(INIT_EARLY) = {
+	.supp_hardware_subarch = X86_SUBARCH_ALL_SUBARCHS,
 	.detect = detect_memory,
 	.early_init = early_init_memory,
 	.name = "Memory",

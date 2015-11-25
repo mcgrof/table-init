@@ -3,29 +3,21 @@
 #include <errno.h>
 #include "init.h"
 #include "kernel.h"
-
-static bool __is_kasan_setup = false;
+#include "bootparam.h"
 
 int kasan_early_init(void) {
 	printf("Early init for Kasan...\n");
-	__is_kasan_setup = true;
 	return 0;
 }
 
-bool is_kasan_setup(void)
+void kasan_init(void)
 {
-	return __is_kasan_setup;
-}
-
-int kasan_init(void)
-{
-	if (!__is_kasan_setup) {
-		printf("Kasan was not set up...\n");
-		BUG();
-		return -EINVAL;
-	}
-
 	printf("Calling setup_arch work for Kasan...\n");
-
-	return 0;
 }
+
+struct init_fn kasan_init_fn __init_fn(INIT_EARLY) = {
+	.supp_hardware_subarch = BIT(X86_SUBARCH_PC),
+	.early_init = kasan_early_init,
+	.setup_arch = kasan_init,
+	.name = "Kasan",
+};

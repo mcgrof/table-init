@@ -39,8 +39,21 @@
  *	mode and even after setup_arch(), which is not Xen specific.
  *
  *	Further evaluation of this use is currently being done.
+ *
+ *	Must be set, it represents the bitmask of supported subarchitectures.
+ *	We require each init sequence to have this set to require developer
+ *	considerations for each supported x86 subarchitecture, and to avoid
+ *	unexpected unsupported running feature code in unsupported or vetted
+ *	subarchitectures.
+ *
+ *	Each supported subarchitecture is set using the respective
+ *	X86_SUBARCH_* as a bit in the bitmask. For instance if a feature
+ *	is supported only PC and Xen only you would set this bitmask to:
+ *		BIT(X86_SUBARCH_PC) |
+ *		BIT(X86_SUBARCH_XEN);
  */
 struct init_fn {                                                                
+	__u32 supp_hardware_subarch;
 	int (*detect)(void);
 	int (*depend)(void);
 	int (*early_init)(void); /* No memory allocate available. */
@@ -51,7 +64,6 @@ struct init_fn {
 #define INIT_FINISH_IF_DETECTED (1<<0)
 #define INIT_DETECTED           (1<<1)
 	int flags;
-	__u32 supp_hardware_subarch;
 };
 
 /** Initialisation function table */
