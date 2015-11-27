@@ -51,6 +51,8 @@ void check_table_entries(struct init_fn *start,
 
 	/* Simple cyclic dependency checker. */
 	for (p = start; p < finish; p++) {
+		if (!p->depend)
+			continue;
 		q = find_dependents_of(start, finish, p);
 		x = find_dependents_of(start, finish, q);
 		if (p == x) {
@@ -63,6 +65,8 @@ void check_table_entries(struct init_fn *start,
 
 	for (p = start; p < finish; p++) {
 		q = find_dependents_of(p, finish, p);
+		if (!p->depend)
+			continue;
 		if (q && q > p) {
 			printf("EXECUTION ORDER INVALID! %pS should be called before %pS!\n",
 			       p->detect, q->detect);

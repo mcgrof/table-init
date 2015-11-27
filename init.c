@@ -14,7 +14,15 @@ int early_init(void)
 	printf("Number of init entries: %d\n", num_inits);
 
 	for_each_table_entry(init_fn, INIT_FNS) {
-		if (init_fn->detect && init_fn->detect() > 0) {
+		if (!init_fn->detect)
+			init_fn->flags |= INIT_DETECTED;
+		else {
+			ret = init_fn->detect();
+			if (ret > 0)
+				init_fn->flags |= INIT_DETECTED;
+		}
+
+		if (init_fn->flags & INIT_DETECTED) {
 			init_fn->flags |= INIT_DETECTED;
 			printf("Initializing %s ...\n", init_fn->name);
 			ret = init_fn->early_init();

@@ -1,7 +1,9 @@
 #include <stdbool.h>
 #include <linux/types.h>
 
+#include "kernel.h"
 #include "tables.h"
+#include "bootparam.h"
 
 /**
  * struct init_fn - architecture and kernel init
@@ -18,6 +20,10 @@
  * still desirable to enable different architecture run time environments
  * in a single binary, usin the init structures also enables kernel features
  * to annotate known supported run time environments.
+ *
+ * @detect: if you do not have a detect call its assume you don't need
+ *	a special check for detection and the init core is able to safely
+ *	call the featutres's early_init(), setup_arch() and late_init().
  *
  * @supp_hardware_subarch: the supported X86_SUBARCH_* archs. The only
  *	issue with using this is X86_SUBARCH_PC is 0 and as such it
