@@ -6,68 +6,134 @@
 #include "bootparam.h"
 
 /**
- * struct init_fn - architecture and kernel init
+ * struct x86_init_fn - x86 generic kernel init call
  *
- * Linux initialization is split up into 4 parts, an early init,
- * an architecture specific init call, and a late init call. This
- * init structure enables kernel features annotate where in the init
- * process a respective init call for a feature must be called. When
- * needed it also enables building dependency relationships between
- * components.
+ * Linux x86 features vary in complexity, features may require work
+ * done at different levels of the full x86 init sequence. Today there
+ * are also two different possible entry points for Linux on x86, one for
+ * bare metal, KVM and Xen HVM, and another for Xen PV guests / dom0.
+ * Assuming bootloader has set up 64-bit mode, roughly the x86 init sequence
+ * follows this path:
  *
- * Since you may wish to enable at build time features which may not be
- * available for different architecture run time environments, but its
- * still desirable to enable different architecture run time environments
- * in a single binary, usin the init structures also enables kernel features
- * to annotate known supported run time environments.
+ * Bare metal, KVM, Xen HVM                      Xen PV / dom0
+ *       startup_64()                             startup_xen()
+ *              \                                     /
+ *      x86_64_start_kernel()                 xen_start_kernel()
+ *                           \               /
+ *                      x86_64_start_reservations()
+ *                                   |
+ *                              start_kernel()
+ *                              [   ...        ]
+ *                              [ setup_arch() ]
+ *                              [   ...        ]
+ *                                  init
  *
- * @detect: if you do not have a detect call its assume you don't need
- *	a special check for detection and the init core is able to safely
- *	call the featutres's early_init(), setup_arch() and late_init().
+ * x86_64_start_kernel() and xen_start_kernel() are the respective first C code
+ * entry starting points. The different entry points exist to enable Xen to
+ * skip a lot of hardware setup already done and managed on behalf of the
+ * hypervisor. The different levels of init calls exist to account for these
+ * slight differences but also share a common entry x86 specific path,
+ * x86_64_start_reservations().
  *
- * @supp_hardware_subarch: the supported X86_SUBARCH_* archs. The only
- *	issue with using this is X86_SUBARCH_PC is 0 and as such it
- *	cannot really be annotated as supported. The boot loader would
- *	also need to set this. Evaluation if difficulties of using
- *	this is currently being done. We also currently don't have a
- *	value for KVM. A value might be desirable however given that
- *	the only other thing available to us during early boot is
- *	the boot params. For instance the alternative X86_FEATURE_HYPERVISOR
- *	feature is actually only made available to the booted kernel
- *	after early_cpu_init(), way after setup_arch. We want a tool
- *	which enables us to distinguish requirements between protected
- *	mode and even after setup_arch(), which is not Xen specific.
+ * A generic x86 feature can have different initialization calls, one on
+ * each different init sequence, but must also address both entry points in
+ * order to work properly across the board on all supported x86
+ * subarchitectures. x86 features can also have dependencies on other setup
+ * code or features. Using struct x86_init_fn x86 feature developers must
+ * annotate supported subarchitectures, dependencies and also declare
+ * a two-digit decimal number to impose an ordering relative to other
+ * features when required.
  *
- *	Further evaluation of this use is currently being done.
+ * @supp_hardware_subarch: Must be set, it represents the bitmask of supported
+ *	subarchitectures.  We require each struct x86_init_fn to have this set
+ *	to require developer considerations for each supported x86
+ *	subarchitecture and to build strong annotations of different possible
+ *	run time states particularly in consideration for the two main
+ *	different entry points for x86 Linux.
  *
- *	Must be set, it represents the bitmask of supported subarchitectures.
- *	We require each init sequence to have this set to require developer
- *	considerations for each supported x86 subarchitecture, and to avoid
- *	unexpected unsupported running feature code in unsupported or vetted
- *	subarchitectures.
+ *	The subarchitecture is read by the kernel at early boot from the
+ *	struct boot_params hardware_subarch. Support for the subarchitecture
+ *	exists as of x86 boot protocol 2.07. The bootloader would have set up
+ *	the respective hardware_subarch on the boot sector as per
+ *	Documentation/x86/boot.txt.
+ *
+ *	What x86 entry point is used is determined at run time by the
+ *	bootloader. Linux pv_ops was designed to help enable to build one Linux
+ *	binary to support bare metal and different hypervisors.  pv_ops setup
+ *	code however is limited in that all pv_ops setup code is run late in
+ *	the x86 init sequence, during setup_arch(). In fact cpu_has_hypervisor
+ *	only works after early_cpu_init() during setup_arch(). If an x86
+ *	feature requires an earlier determination of what hypervisor was used,
+ *	or if it needs to annotate only support for certain hypervisors, the
+ *	x86 hardware_subarch should be set by the bootloader and
+ *	@supp_hardware_subarch set by the x86 feature. Using hardware_subarch
+ *	enables x86 features to fill the semantic gap between the Linux x86
+ *	entry point used and what pv_ops has to offer through a hypervisor
+ *	agnostic mechanism.
  *
  *	Each supported subarchitecture is set using the respective
  *	X86_SUBARCH_* as a bit in the bitmask. For instance if a feature
- *	is supported only PC and Xen only you would set this bitmask to:
+ *	is supported on PC and Xen subarchitectures only you would set this
+ *	bitmask to:
+ *
  *		BIT(X86_SUBARCH_PC) |
  *		BIT(X86_SUBARCH_XEN);
+ * @detect: if set returns true if the feature has been detected to be
+ *	required, it returns false if the feature has been detected to
+ *	not be required.
+ * @depend: if set this set of init routines must be called prior to the
+ * 	init routine who's respective detect routine we have set this
+ * 	depends callback to. This is only used for sorting purposes.
+ *	If you do not have a depend callback set its assumed the order level
+ *	(__init_fn(level)) set by the init routine suffices to set the order
+ *	for when the feature's respective callbacks are called with respect to
+ *	other calls. Sorting of init calls between on the same order level is
+ *	determined by linker order, determined by order listed on the Makefile.
+ *
+ *	XXX: we can't enforce validity of the order level as the order level is
+ *	an annotation and used as part of the table name. One possibility to
+ *	enforce checking is to extend struct x86_init_fn with a numeric order
+ *	level, and use macro declarations for declaring order level both for
+ *	the table name and x86_init_fn explicit struct numeric order. If we
+ *	want to avoid extending the struct we could also use Coccinelle,
+ *	however we can't use C annotations on Coccinelle, but Coccinelle does
+ *	understand macro declarers such as DECLARE_MUTEX(), one could use
+ *	SmPL rules with expected uses of declarers.
+ * @early_init: if set would be run during before x86_64_start_reservations().
+ *	Memory is not yet available.
+ * @setup_arch: if set would be run during setup_arch().
+ * @late_init: if set would be run right before init is spawned. You can count
+ * 	on memory being set up.
+ * @flags: private internal flags
  */
-struct init_fn {                                                                
+struct x86_init_fn {
 	__u32 supp_hardware_subarch;
-	int (*detect)(void);
-	int (*depend)(void);
-	int (*early_init)(void); /* No memory allocate available. */
+	bool (*detect)(void);
+	bool (*depend)(void);
+	void (*early_init)(void);
 	void (*setup_arch)(void);
-	int (*late_init)(void); /* Yes, can allocate memory. */
-	bool critical;
+	void (*late_init)(void);
 	const char *name;
-#define INIT_FINISH_IF_DETECTED (1<<0)
-#define INIT_DETECTED           (1<<1)
-	int flags;
+	__u32 flags;
+};
+
+/**
+ * enum x86_init_fn_flags: private flags for init sequences
+ *
+ * INIT_FINISH_IF_DETECTED: tells the core that once this init sequence
+ *	has completed it can break out of the loop for init sequences on
+ *	its own level.
+ * INIT_DETECTED: the x86 core has determined that this
+ * 	init sequence has been detected and it all of its callbacks
+ * 	must be run during initialization.
+ */
+enum x86_init_fn_flags {
+	INIT_FINISH_IF_DETECTED = BIT(0),
+	INIT_DETECTED = BIT(1),
 };
 
 /** Initialisation function table */
-#define INIT_FNS __table (struct init_fn, "init_fns")
+#define INIT_FNS __table(struct x86_init_fn, "init_fns")
 
 /** Declare an initialisation functon */
 #define __init_fn( init_order ) __table_entry (INIT_FNS, init_order)
@@ -77,11 +143,11 @@ struct init_fn {
 #define INIT_CONSOLE	03	/**< Console initialisation */
 #define INIT_NORMAL	04	/**< Normal initialisation */
 
-int early_init(void);
-int late_init(void);
+void early_init(void);
+void late_init(void);
 void setup_arch_init(void);
 
-void sort_table(struct init_fn *start,
-		      struct init_fn *finish);
-void check_table_entries(struct init_fn *start,
-			 struct init_fn *finish);
+void sort_table(struct x86_init_fn *start,
+		      struct x86_init_fn *finish);
+void check_table_entries(struct x86_init_fn *start,
+			 struct x86_init_fn *finish);

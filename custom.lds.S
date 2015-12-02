@@ -153,9 +153,28 @@ SECTIONS
   . = .;
 
   .tbl            : {
-    __tbl = .;
-    *(SORT(.tbl.*))
-    __tbl_end = .;
+
+	/*
+	 * x86 generic init solution: this will sort all order levels
+	 * lexicographically. Something like SORT_BY_INIT_PRIORITY()
+	 * which sorts specifically on numeric order is desirable but
+	 * that would impose a change on binutils to generalize
+	 * SORT_BY_INIT_PRIORITY() for any section, SORT_BY_INIT_PRIORITY()
+	 * is specific to the init sections, and that would also mean having
+	 * a bump on requirments for building Linux. Using SORT() should
+	 * suffice, * its what gpxe uses. For things in the same order
+	 * level we rely on order in the C file, and also order on the
+	 * Makefile. Since this solution also embraces the IOMMU init solution
+	 * it has further sorting semantics implemented in C and its semantics
+	 * are defined in init.h and implemented in sort-init.c.
+	 */
+	__tbl_x86_start_init_fns = .;
+	*(SORT(.tbl.init_fns.*))
+	__tbl_x86_end_init_fns = .;
+
+	/* ... etc ... */
+
+	/* You would add other tables here as needed */
   }
   . = ALIGN(8);
 

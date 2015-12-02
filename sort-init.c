@@ -4,12 +4,12 @@
 
 #define DEBUG 1
 
-static struct init_fn *
-find_dependents_of(struct init_fn *start,
-		   struct init_fn *finish,
-		   struct init_fn *q)
+static struct x86_init_fn *
+find_dependents_of(struct x86_init_fn *start,
+		   struct x86_init_fn *finish,
+		   struct x86_init_fn *q)
 {
-	struct init_fn *p;
+	struct x86_init_fn *p;
 
 	if (!q)
 		return NULL;
@@ -22,10 +22,10 @@ find_dependents_of(struct init_fn *start,
 }
 
 
-void sort_table(struct init_fn *start,
-		struct init_fn *finish) {
+void sort_table(struct x86_init_fn *start,
+		struct x86_init_fn *finish) {
 
-	struct init_fn *p, *q, tmp;
+	struct x86_init_fn *p, *q, tmp;
 
 	for (p = start; p < finish; p++) {
 again:
@@ -44,10 +44,10 @@ again:
 }
 
 #ifdef DEBUG
-void check_table_entries(struct init_fn *start,
-			 struct init_fn *finish)
+void check_table_entries(struct x86_init_fn *start,
+			 struct x86_init_fn *finish)
 {
-	struct init_fn *p, *q, *x;
+	struct x86_init_fn *p, *q, *x;
 
 	/* Simple cyclic dependency checker. */
 	for (p = start; p < finish; p++) {
@@ -74,8 +74,8 @@ void check_table_entries(struct init_fn *start,
 	}
 }
 #else
-inline void check_table_entries(struct init_fn *start,
-				struct init_fn *finish)
+inline void check_table_entries(struct x86_init_fn *start,
+				struct x86_init_fn *finish)
 {
 }
 #endif

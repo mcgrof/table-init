@@ -60,16 +60,60 @@ setup_header->hardware_subarch_data     0x0240
 TODO
 ====
 
-You should see that using './main -x' fails to boot right now.
-We are not sure when this will be fixed. Our goal is to illustrate
-how to fix this using the infrastructure we've developed.
+Address any code annotations marked with XXX
 
-Once we have a xen hook for init routines we can show how we can
-block kasan from running at all as its not yet ready for xen but
-also that we can use this stuff to later also de-activate code
-we know should *not run at all* on Xen. For instance the memory
-setup code. Right now we'd have code split up in two different
-places, or checks with things like pv_enabled() on Linux -- in
-this code booting_xen() is used. We can replace these conditionals
-as well later with a proper init structure annotation.
+Table solution history
+======================
 
+The init table solution implemented here is a combination of how the
+Linux IOMMU init framework was implemented *and* how GPXE sorts its
+own init work.
+
+Table sorting
+=============
+
+The Linux IOMMU solution gives us dependency annotations,
+so one set of routines will not run until its dependency runs. The
+sorting for this takes place with a C routine which ultimately
+memmove()'s the routines in order.
+
+The sorting done by the GPXE solution is all done by the linker
+by the good 'ol SORT() through in the object's linker script.
+
+We want to enable different subsystems to implement their own
+table solutions and this can mean having different init structure
+members, that is how the gpxe solution works. Sorting is done automatically
+for you through linker at build time. The sorting through the IOMMU init
+solution works using the actual specific structure for the subsystem
+used and the semantics for the sorting must be clearly documented and
+defined. For instance the original IOMMU init solution requires only
+one init solution to have a NULL set for its depends callback. For
+our mockup x86 init solution we are allowing both "depends" and
+"detect" to be NULL. For changes to how our sorting implementation
+was modified refer to commit 9e01858bbc74a11 ("init: enable support
+for no depends() callback). The sorting for routines that do not have
+a "depends" callback set would happen through the order table level
+used, a la gpxe solution. When the order levels are the same we rely
+on order of linking -- for instance: placement of the routines in the
+C file, and at the file level based on order in the Makefile.
+
+Furthermore, upon initialization the mockup x86 init solution relies
+on the subarchitecture to skip routines which are not supported or
+intended for its subarchitecture.
+
+It might be possible to share a common C sort routine for all tables
+but the first challenge is we'd likely be constraining our init structures.
+For instance since the current sorting looks for an init routine's "depends"
+callback, that callback will be placed in a specific location as part of the
+structure. In order to share a sort we'd have to enforce a common set of
+table structures for at least the sorting semantics, for instance this
+could perhaps be accomplished by placing all relevant members relevant to
+sorting semantics in the beginning of the structure. The next challenge
+has to do with size, given that we move structures around with memmove()
+and this is done depending on the size of the init structure, and that
+is up to each subsystem to define. This could be resolved by fixating the
+size of all table init structures.
+
+For now each subsystem must then define its own sorting scheme. A sorting
+algorithm is only necessary if the linker script sorting does not suffice
+for the semantics of the subsystem.

@@ -9,9 +9,9 @@
 #include "setup.h"
 #include "bootparam.h"
 
-extern struct init_fn __tbl[], __tbl_end[];
+extern struct x86_init_fn __tbl_x86_start_init_fns[], __tbl_x86_end_init_fns[];
 
-int x86_64_start_reservations(void)
+void x86_64_start_reservations(void)
 {
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_PC:
@@ -19,44 +19,38 @@ int x86_64_start_reservations(void)
 		break;
 	case X86_SUBARCH_LGUEST:
 		printf("Booting lguest not supported\n");
-		return -EOPNOTSUPP;
+		BUG();
 	case X86_SUBARCH_XEN:
 		printf("Booting a Xen guest\n");
 		break;
 	case X86_SUBARCH_INTEL_MID:
 		printf("Booting Intel MID not supported\n");
-		return -EOPNOTSUPP;
+		BUG();
 	case X86_SUBARCH_CE4100:
 		printf("Booting Intel CE4100 not supported\n");
-		return -EOPNOTSUPP;
+		BUG();
 	default:
 		printf("Booting sunsupported x86 hardware subarch\n");
-		return -EOPNOTSUPP;
+		BUG();
 	}
 
-	return start_kernel();
+	start_kernel();
 }
 
-static int x86_64_start_kernel(void)
+static void x86_64_start_kernel(void)
 {
-	int ret;
+	sort_table(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
+	check_table_entries(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
 
-	sort_table(__tbl, __tbl_end);
-	check_table_entries(__tbl, __tbl_end);
+	early_init();
 
-	ret = early_init();
-	if (ret) {
-		printf("Early init failed\n");
-		return ret;
-	}
-
-	return x86_64_start_reservations();
+	x86_64_start_reservations();
 }
 
-int startup_64(void)
+void startup_64(void)
 {
 	printf("Initializing x86 bare metal world\n");
-	return x86_64_start_kernel();
+	x86_64_start_kernel();
 }
 
 void setup_arch(void)

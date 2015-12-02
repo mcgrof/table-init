@@ -1,1 +1,1 @@
-int detect_pci(void);
+bool detect_pci(void);

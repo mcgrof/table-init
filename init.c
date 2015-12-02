@@ -6,7 +6,7 @@
 #include "init.h"
 #include "setup.h"
 
-static bool x86_init_supports_subarch(struct init_fn *fn)
+static bool x86_init_supports_subarch(struct x86_init_fn *fn)
 {
 	if (!fn->supp_hardware_subarch) {
 		printf("Init sequence fails to declares supported subarchs: %s\n", fn->name);
@@ -17,10 +17,10 @@ static bool x86_init_supports_subarch(struct init_fn *fn)
 	return false;
 }
 
-int early_init(void)
+void early_init(void)
 {
 	int ret;
-	struct init_fn *init_fn;
+	struct x86_init_fn *init_fn;
 
 	unsigned int num_inits = table_num_entries(INIT_FNS);
 
@@ -40,51 +40,30 @@ int early_init(void)
 		if (init_fn->flags & INIT_DETECTED) {
 			init_fn->flags |= INIT_DETECTED;
 			printf("Initializing %s ...\n", init_fn->name);
-			ret = init_fn->early_init();
-			if (ret) {
-				if (init_fn->critical) {
-					printf("Failed to initialize %s on early init\n", init_fn->name);
-					return ret;
-				}
-				printf("Failed to initialize %s on early init, but its not critical\n", init_fn->name);
-
-			} else
-				printf("Completed initializing %s !\n", init_fn->name);
+			init_fn->early_init();
+			printf("Completed initializing %s !\n", init_fn->name);
 			if (init_fn->flags & INIT_FINISH_IF_DETECTED)
 				break;
 		}
 	}
-
-	return 0;
 }
 
-int late_init(void)
+void late_init(void)
 {
-	int ret;
-	struct init_fn *init_fn;
+	struct x86_init_fn *init_fn;
 
 	for_each_table_entry(init_fn, INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->late_init) {
 			printf("Running late init for %s ...\n", init_fn->name);
-			ret = init_fn->late_init();
-			if (ret) {
-				if (init_fn->critical) {
-					printf("Failed to initialize %s on late init\n", init_fn->name);
-					return ret;
-				}
-				printf("Failed to initialize %s on late init, but its not critical\n", init_fn->name);
-
-			} else
-				printf("Completed late initializing of %s !\n", init_fn->name);
+			init_fn->late_init();
+			printf("Completed late initializing of %s !\n", init_fn->name);
 		}
 	}
-
-	return 0;
 }
 
 void setup_arch_init(void)
 {
-	struct init_fn *init_fn;
+	struct x86_init_fn *init_fn;
 
 	for_each_table_entry(init_fn, INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->setup_arch) {

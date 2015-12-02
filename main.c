@@ -8,16 +8,14 @@ struct boot_params boot_params __attribute__((aligned(16)));
 
 int main(int arg, char *argc[])
 {
-	int ret;
-
 	memset(&boot_params, 0, sizeof(struct boot_params));
 
 	if (arg <= 1)
-		ret = startup_64();
+		startup_64();
 	else {
 		boot_params.hdr.hardware_subarch = X86_SUBARCH_XEN;
-		ret = startup_xen();
+		startup_xen();
 	}
 
-	return ret;
+	return 0;
 }

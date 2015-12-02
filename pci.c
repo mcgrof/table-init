@@ -7,20 +7,17 @@
 #include "pci.h"
 #include "bootparam.h"
 
-static int early_init_pci(void) {
+void early_init_pci(void) {
 	sleep(1);
-
-	return 0;
 }
 
-int detect_pci(void) {
-	return 1;
+bool detect_pci(void) {
+	return true;
 }
 
-struct init_fn pci_init_fn __init_fn(INIT_NORMAL) = {
+struct x86_init_fn pci_init_fn __init_fn(INIT_NORMAL) = {
 	.supp_hardware_subarch = X86_SUBARCH_ALL_SUBARCHS,
 	.detect = detect_pci,
 	.early_init = early_init_pci,
 	.name = "PCI buses",
-	.critical = true,
 };
