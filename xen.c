@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "init.h"
+#include "x86_init_fn.h"
 #include "tables.h"
 #include "x86.h"
 

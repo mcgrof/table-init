@@ -3,7 +3,7 @@
 #include <errno.h>
 
 #include "kernel.h"
-#include "init.h"
+#include "x86_init_fn.h"
 #include "setup.h"
 
 static bool x86_init_supports_subarch(struct x86_init_fn *fn)

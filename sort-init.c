@@ -1,6 +1,6 @@
 #include <stdio.h> /* for NULL and printf */
 #include <string.h> /* for memmove */
-#include "init.h"
+#include "x86_init_fn.h"
 
 #define DEBUG 1
 

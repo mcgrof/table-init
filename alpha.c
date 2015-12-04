@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "init.h"
+#include "x86_init_fn.h"
 #include "kernel.h"
 
 static void early_init_alpha(void) {

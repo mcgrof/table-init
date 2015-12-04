@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "tables.h"
-#include "init.h"
+#include "x86_init_fn.h"
 #include "start_kernel.h"
 #include "kasan.h"
 #include "setup.h"

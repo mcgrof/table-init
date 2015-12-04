@@ -166,7 +166,7 @@ SECTIONS
 	 * level we rely on order in the C file, and also order on the
 	 * Makefile. Since this solution also embraces the IOMMU init solution
 	 * it has further sorting semantics implemented in C and its semantics
-	 * are defined in init.h and implemented in sort-init.c.
+	 * are defined in x86_init_fn.h and implemented in sort-init.c.
 	 */
 	__tbl_x86_start_init_fns = .;
 	*(SORT(.tbl.x86_init_fns.*))
