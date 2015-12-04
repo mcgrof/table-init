@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#include "x86_init_fn.h"
-#include "kernel.h"
-#include "bootparam.h"
+
+#include <linux/kernel.h>
+
+#include <asm/x86_init_fn.h>
+#include <asm/bootparam.h>
 
 void kasan_early_init(void) {
 	pr_info("Early init for Kasan...\n");

@@ -1,12 +1,11 @@
 #ifndef __X86_INIT_TABLES_H
 #define __X86_INIT_TABLES_H
 
-#include <stdbool.h>
 #include <linux/types.h>
+#include <linux/kernel.h>
+#include <linux/tables.h>
 
-#include "kernel.h"
-#include "tables.h"
-#include "bootparam.h"
+#include <asm/bootparam.h>
 
 /**
  * struct x86_init_fn - x86 generic kernel init call

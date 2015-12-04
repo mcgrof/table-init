@@ -1,11 +1,8 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
+#include <linux/tables.h>
+#include <asm/x86_init_fn.h>
+#include <asm/bootparam.h>
 
-#include "tables.h"
-#include "x86_init_fn.h"
-#include "pci.h"
-#include "bootparam.h"
+#include <linux/pci.h>
 
 void early_init_pci(void) {
 	sleep(1);

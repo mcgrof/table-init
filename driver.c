@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include <unistd.h>
-
-#include "x86_init_fn.h"
-#include "pci.h"
-#include "kernel.h"
+#include <linux/kernel.h>
+#include <linux/pci.h>
+#include <asm/x86_init_fn.h>
 
 static void early_init_driver(void) {
 	sleep(2);

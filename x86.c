@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <errno.h>
-#include "tables.h"
-#include "x86_init_fn.h"
-#include "start_kernel.h"
-#include "kasan.h"
-#include "setup.h"
-#include "bootparam.h"
+#include <linux/tables.h>
+
+#include <asm/x86_init_fn.h>
+#include <asm/boot/boot.h>
+#include <asm/bootparam.h>
+
+#include <linux/start_kernel.h>
+#include <linux/kasan.h>
 
 extern struct x86_init_fn __tbl_x86_start_init_fns[], __tbl_x86_end_init_fns[];
 

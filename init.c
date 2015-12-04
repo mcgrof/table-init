@@ -1,10 +1,6 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
-
-#include "kernel.h"
-#include "x86_init_fn.h"
-#include "setup.h"
+#include <linux/kernel.h>
+#include <asm/x86_init_fn.h>
+#include <asm/boot/boot.h>
 
 static bool x86_init_supports_subarch(struct x86_init_fn *fn)
 {

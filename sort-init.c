@@ -1,6 +1,7 @@
-#include <stdio.h> /* for NULL and pr_info */
-#include <string.h> /* for memmove */
-#include "x86_init_fn.h"
+#include <linux/types.h>
+#include <linux/kernel.h>
+#include <linux/string.h>
+#include <asm/x86_init_fn.h>
 
 #define DEBUG 1
 

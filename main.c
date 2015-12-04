@@ -1,8 +1,7 @@
-#include <string.h>
-
-#include "x86.h"
-#include "xen.h"
-#include "bootparam.h"
+#include <linux/string.h>
+#include <xen/xen.h>
+#include <asm/x86.h>
+#include <asm/bootparam.h>
 
 struct boot_params boot_params __attribute__((aligned(16)));
 

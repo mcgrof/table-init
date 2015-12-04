@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "x86_init_fn.h"
-#include "x86.h"
+#include <asm/x86_init_fn.h>
+#include <asm/x86.h>
 
 void start_kernel(void)
 {

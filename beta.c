@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "x86_init_fn.h"
-#include "kernel.h"
+#include <linux/kernel.h>
+#include <asm/x86_init_fn.h>
 
 static void early_init_beta(void) {
 }

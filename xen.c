@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "x86_init_fn.h"
-#include "tables.h"
-#include "x86.h"
+
+#include <linux/tables.h>
+#include <asm/x86_init_fn.h>
+#include <asm/x86.h>
 
 extern struct x86_init_fn __tbl_x86_start_init_fns[], __tbl_x86_end_init_fns[];
 

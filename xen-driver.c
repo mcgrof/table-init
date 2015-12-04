@@ -1,9 +1,7 @@
-#include <stdio.h>
-#include <unistd.h>
+#include <asm/x86_init_fn.h>
 
-#include "x86_init_fn.h"
-#include "pci.h"
-#include "xen.h"
+#include <linux/pci.h>
+#include <xen/xen.h>
 
 static void early_xen_init_driver(void) {
 	sleep(2);

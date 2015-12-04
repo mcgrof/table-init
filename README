@@ -117,3 +117,10 @@ size of all table init structures.
 For now each subsystem must then define its own sorting scheme. A sorting
 algorithm is only necessary if the linker script sorting does not suffice
 for the semantics of the subsystem.
+
+File mapping upstream
+=====================
+
+In case this project maintains a matching with upstream this project strives
+to maintain a one to one direct mapping as things are or we hope would
+be on upstream Linux.

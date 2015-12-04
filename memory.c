@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "x86_init_fn.h"
+#include <asm/x86_init_fn.h>
 
 static void early_init_memory(void) {
 	sleep(1);

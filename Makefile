@@ -1,5 +1,6 @@
 CFLAGS += -O2 -g
 CFLAGS += -std=gnu99 -Wall -Werror
+CFLAGS += -I include/ -I arch/x86/include/
 
 CFLAGS +=-Wl,-Tcustom.lds.S
 
