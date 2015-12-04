@@ -15,22 +15,22 @@ void x86_64_start_reservations(void)
 {
 	switch (boot_params.hdr.hardware_subarch) {
 	case X86_SUBARCH_PC:
-		printf("Booting bare metal\n");
+		pr_info("Booting bare metal\n");
 		break;
 	case X86_SUBARCH_LGUEST:
-		printf("Booting lguest not supported\n");
+		pr_info("Booting lguest not supported\n");
 		BUG();
 	case X86_SUBARCH_XEN:
-		printf("Booting a Xen guest\n");
+		pr_info("Booting a Xen guest\n");
 		break;
 	case X86_SUBARCH_INTEL_MID:
-		printf("Booting Intel MID not supported\n");
+		pr_info("Booting Intel MID not supported\n");
 		BUG();
 	case X86_SUBARCH_CE4100:
-		printf("Booting Intel CE4100 not supported\n");
+		pr_info("Booting Intel CE4100 not supported\n");
 		BUG();
 	default:
-		printf("Booting sunsupported x86 hardware subarch\n");
+		pr_info("Booting sunsupported x86 hardware subarch\n");
 		BUG();
 	}
 
@@ -49,7 +49,7 @@ static void x86_64_start_kernel(void)
 
 void startup_64(void)
 {
-	printf("Initializing x86 bare metal world\n");
+	pr_info("Initializing x86 bare metal world\n");
 	x86_64_start_kernel();
 }
 

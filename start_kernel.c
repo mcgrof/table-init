@@ -5,7 +5,7 @@
 
 void start_kernel(void)
 {
-	printf("Calling start_kernel()...\n");
+	pr_info("Calling start_kernel()...\n");
 
 	setup_arch();
 	late_init();

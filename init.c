@@ -9,7 +9,7 @@
 static bool x86_init_supports_subarch(struct x86_init_fn *fn)
 {
 	if (!fn->supp_hardware_subarch) {
-		printf("Init sequence fails to declares supported subarchs: %s\n", fn->name);
+		pr_info("Init sequence fails to declares supported subarchs: %s\n", fn->name);
 		WARN_ON(1);
 	}
 	if (BIT(boot_params.hdr.hardware_subarch) & fn->supp_hardware_subarch)
@@ -24,7 +24,7 @@ void early_init(void)
 
 	unsigned int num_inits = table_num_entries(X86_INIT_FNS);
 
-	printf("Number of init entries: %d\n", num_inits);
+	pr_info("Number of init entries: %d\n", num_inits);
 
 	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if (!x86_init_supports_subarch(init_fn))
@@ -39,9 +39,9 @@ void early_init(void)
 
 		if (init_fn->flags & INIT_DETECTED) {
 			init_fn->flags |= INIT_DETECTED;
-			printf("Initializing %s ...\n", init_fn->name);
+			pr_info("Initializing %s ...\n", init_fn->name);
 			init_fn->early_init();
-			printf("Completed initializing %s !\n", init_fn->name);
+			pr_info("Completed initializing %s !\n", init_fn->name);
 			if (init_fn->flags & INIT_FINISH_IF_DETECTED)
 				break;
 		}
@@ -54,9 +54,9 @@ void late_init(void)
 
 	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->late_init) {
-			printf("Running late init for %s ...\n", init_fn->name);
+			pr_info("Running late init for %s ...\n", init_fn->name);
 			init_fn->late_init();
-			printf("Completed late initializing of %s !\n", init_fn->name);
+			pr_info("Completed late initializing of %s !\n", init_fn->name);
 		}
 	}
 }
@@ -67,7 +67,7 @@ void setup_arch_init(void)
 
 	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->setup_arch) {
-			printf("Running setup_arch for %s ...\n", init_fn->name);
+			pr_info("Running setup_arch for %s ...\n", init_fn->name);
 			init_fn->setup_arch();
 		}
 	}

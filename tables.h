@@ -142,7 +142,7 @@
  *	struct frob *frob;
  *
  *	for_each_table(frob, FROBNICATORS) {
- *         printf("Calling frobnicator \"%s\"\n", frob->name);
+ *         pr_info("Calling frobnicator \"%s\"\n", frob->name);
  *	   frob->frob();
  *	}
  *   }

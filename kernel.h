@@ -2,6 +2,8 @@
 
 #define BIT(nr)		(1UL << (nr))
 
+#define pr_info(fmt, ...) printf(fmt, ##__VA_ARGS__)
+
 #define BUG() do {										\
 	fprintf(stderr, "----------------------------------------------------------\n");	\
 	fprintf (stderr, "BUG on %s at %s: %i\n", __func__, __FILE__, __LINE__);		\

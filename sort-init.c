@@ -1,4 +1,4 @@
-#include <stdio.h> /* for NULL and printf */
+#include <stdio.h> /* for NULL and pr_info */
 #include <string.h> /* for memmove */
 #include "x86_init_fn.h"
 
@@ -56,7 +56,7 @@ void check_table_entries(struct x86_init_fn *start,
 		q = find_dependents_of(start, finish, p);
 		x = find_dependents_of(start, finish, q);
 		if (p == x) {
-			printf("CYCLIC DEPENDENCY FOUND! %pS depends on %pS and vice-versa. BREAKING IT.\n",
+			pr_info("CYCLIC DEPENDENCY FOUND! %pS depends on %pS and vice-versa. BREAKING IT.\n",
 			       p->name, q->name);
 			/* Heavy handed way..*/
 			x->depend = 0;
@@ -86,7 +86,7 @@ void check_table_entries(struct x86_init_fn *start,
 		 */
 		q = find_dependents_of(start, finish, p);
 		if (q && q > p) {
-			printf("EXECUTION ORDER INVALID! %s should be called before %s!\n",
+			pr_info("EXECUTION ORDER INVALID! %s should be called before %s!\n",
 			       p->name, q->name);
 		}
 
@@ -96,7 +96,7 @@ void check_table_entries(struct x86_init_fn *start,
 		 * strong semantics, so lets avoid these.
 		 */
 		if (q && q->order_level > p->order_level) {
-			printf("INVALID ORDER LEVEL! %s should have an order level <= be called before %s!\n",
+			pr_info("INVALID ORDER LEVEL! %s should have an order level <= be called before %s!\n",
 			       p->name, q->name);
 		}
 	}
