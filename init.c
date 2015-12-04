@@ -2,7 +2,7 @@
 #include <asm/x86_init_fn.h>
 #include <asm/boot/boot.h>
 
-static bool x86_init_supports_subarch(struct x86_init_fn *fn)
+static bool x86_init_fn_supports_subarch(struct x86_init_fn *fn)
 {
 	if (!fn->supp_hardware_subarch) {
 		pr_info("Init sequence fails to declares supported subarchs: %s\n", fn->name);
@@ -13,7 +13,7 @@ static bool x86_init_supports_subarch(struct x86_init_fn *fn)
 	return false;
 }
 
-void early_init(void)
+void x86_init_fn_early_init(void)
 {
 	int ret;
 	struct x86_init_fn *init_fn;
@@ -23,7 +23,7 @@ void early_init(void)
 	pr_info("Number of init entries: %d\n", num_inits);
 
 	for_each_table_entry(init_fn, X86_INIT_FNS) {
-		if (!x86_init_supports_subarch(init_fn))
+		if (!x86_init_fn_supports_subarch(init_fn))
 			continue;
 		if (!init_fn->detect)
 			init_fn->flags |= INIT_DETECTED;
@@ -44,7 +44,7 @@ void early_init(void)
 	}
 }
 
-void late_init(void)
+void x86_init_fn_late_init(void)
 {
 	struct x86_init_fn *init_fn;
 
@@ -57,7 +57,7 @@ void late_init(void)
 	}
 }
 
-void setup_arch_init(void)
+void x86_init_fn_setup_arch(void)
 {
 	struct x86_init_fn *init_fn;
 

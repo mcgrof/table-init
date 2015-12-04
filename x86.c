@@ -37,10 +37,10 @@ void x86_64_start_reservations(void)
 
 static void x86_64_start_kernel(void)
 {
-	sort_table(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
-	check_table_entries(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
+	x86_init_fn_sort(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
+	x86_init_fn_check(__tbl_x86_start_init_fns, __tbl_x86_end_init_fns);
 
-	early_init();
+	x86_init_fn_early_init();
 
 	x86_64_start_reservations();
 }
@@ -53,5 +53,10 @@ void startup_64(void)
 
 void setup_arch(void)
 {
-	setup_arch_init();
+	x86_init_fn_setup_arch();
+}
+
+void late_init(void)
+{
+	x86_init_fn_late_init();
 }

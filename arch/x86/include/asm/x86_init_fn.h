@@ -231,13 +231,11 @@ enum x86_init_fn_flags {
 		        __detect, __depend,				\
 		        __early_init, __setup_arch, __late_init);
 
-void early_init(void);
-void late_init(void);
-void setup_arch_init(void);
+void x86_init_fn_early_init(void);
+void x86_init_fn_setup_arch(void);
+void x86_init_fn_late_init(void);
 
-void sort_table(struct x86_init_fn *start,
-		      struct x86_init_fn *finish);
-void check_table_entries(struct x86_init_fn *start,
-			 struct x86_init_fn *finish);
+void x86_init_fn_sort(struct x86_init_fn *start, struct x86_init_fn *finish);
+void x86_init_fn_check(struct x86_init_fn *start, struct x86_init_fn *finish);
 
 #endif /* __X86_INIT_TABLES_H */

@@ -3,12 +3,9 @@
 #include <linux/string.h>
 #include <asm/x86_init_fn.h>
 
-#define DEBUG 1
-
-static struct x86_init_fn *
-find_dependents_of(struct x86_init_fn *start,
-		   struct x86_init_fn *finish,
-		   struct x86_init_fn *q)
+static struct x86_init_fn *x86_init_fn_find_dep(struct x86_init_fn *start,
+						struct x86_init_fn *finish,
+						struct x86_init_fn *q)
 {
 	struct x86_init_fn *p;
 
@@ -23,14 +20,14 @@ find_dependents_of(struct x86_init_fn *start,
 }
 
 
-void sort_table(struct x86_init_fn *start,
-		struct x86_init_fn *finish) {
+void x86_init_fn_sort(struct x86_init_fn *start,
+		      struct x86_init_fn *finish) {
 
 	struct x86_init_fn *p, *q, tmp;
 
 	for (p = start; p < finish; p++) {
 again:
-		q = find_dependents_of(start, finish, p);
+		q = x86_init_fn_find_dep(start, finish, p);
 		/* We are bit sneaky here. We use the memory address to figure
 		 * out if the node we depend on is past our point, if so, swap.
 		 */
@@ -45,8 +42,7 @@ again:
 }
 
 #ifdef DEBUG
-void check_table_entries(struct x86_init_fn *start,
-			 struct x86_init_fn *finish)
+void x86_init_fn_check(struct x86_init_fn *start, struct x86_init_fn *finish)
 {
 	struct x86_init_fn *p, *q, *x;
 
@@ -54,8 +50,8 @@ void check_table_entries(struct x86_init_fn *start,
 	for (p = start; p < finish; p++) {
 		if (!p->depend)
 			continue;
-		q = find_dependents_of(start, finish, p);
-		x = find_dependents_of(start, finish, q);
+		q = x86_init_fn_find_dep(start, finish, p);
+		x = x86_init_fn_find_dep(start, finish, q);
 		if (p == x) {
 			pr_info("CYCLIC DEPENDENCY FOUND! %pS depends on %pS and vice-versa. BREAKING IT.\n",
 			       p->name, q->name);
@@ -81,11 +77,11 @@ void check_table_entries(struct x86_init_fn *start,
 		 * Be pedantic and do a full search on the entire table,
 		 * if we need further validation, after this is called
 		 * one could use an optimized version which just searches
-		 * on find_dependents_of(p, finish, p), as we would have
+		 * on x86_find_dependents_of(p, finish, p), as we would have
 		 * guarantee on proper ordering both at the dependency level
 		 * and by order level.
 		 */
-		q = find_dependents_of(start, finish, p);
+		q = x86_find_dependents_of(start, finish, p);
 		if (q && q > p) {
 			pr_info("EXECUTION ORDER INVALID! %s should be called before %s!\n",
 			       p->name, q->name);
@@ -103,8 +99,8 @@ void check_table_entries(struct x86_init_fn *start,
 	}
 }
 #else
-inline void check_table_entries(struct x86_init_fn *start,
-				struct x86_init_fn *finish)
+inline void x86_init_fn_check(struct x86_init_fn *start,
+			      struct x86_init_fn *finish)
 {
 }
 #endif
