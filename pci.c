@@ -15,4 +15,4 @@ bool detect_pci(void) {
 	return true;
 }
 
-X86_INIT_NORMAL_ALL(pci, detect_pci, NULL, early_init_pci, NULL, NULL);
+X86_INIT_EARLY_ALL(pci, detect_pci, NULL, early_init_pci, NULL, NULL);

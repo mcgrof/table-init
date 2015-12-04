@@ -208,6 +208,17 @@ enum x86_init_fn_flags {
 		        __detect, __depend,				\
 		        __early_init, __setup_arch, __late_init);
 
+#define X86_INIT_NORMAL_PC(__name,					\
+			   __detect,					\
+			   __depend,					\
+			   __early_init,				\
+			   __setup_arch,				\
+			   __late_init)					\
+	X86_INIT_NORMAL(__name, BIT(X86_SUBARCH_PC),			\
+		        __detect, __depend,				\
+		        __early_init, __setup_arch, __late_init);
+
+
 #define X86_INIT_NORMAL_XEN(__name,					\
 			    __detect,					\
 			    __depend,					\

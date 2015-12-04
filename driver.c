@@ -13,5 +13,5 @@ static bool detect_driver(void) {
 	return true;
 }
 
-X86_INIT_EARLY_PC(acme, detect_driver, detect_pci,
-		  early_init_driver, NULL, NULL);
+X86_INIT_NORMAL_PC(acme, detect_driver, detect_pci,
+		   early_init_driver, NULL, NULL);
