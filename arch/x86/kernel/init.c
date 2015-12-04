@@ -1,6 +1,6 @@
 #include <linux/kernel.h>
 #include <asm/x86_init_fn.h>
-#include <asm/boot/boot.h>
+#include <asm/boot.h>
 
 static bool x86_init_fn_supports_subarch(struct x86_init_fn *fn)
 {

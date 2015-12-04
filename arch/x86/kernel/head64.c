@@ -1,7 +1,7 @@
 #include <linux/tables.h>
 
 #include <asm/x86_init_fn.h>
-#include <asm/boot/boot.h>
+#include <asm/boot.h>
 #include <asm/bootparam.h>
 
 #include <linux/start_kernel.h>
