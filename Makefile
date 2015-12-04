@@ -35,7 +35,7 @@ parse-bzimage: parse-bzimage.c
 # The name of the struct places no effect to the actual linker order.
 OBJS =  sort-init.o \
 	start_kernel.o \
-	x86.o \
+	arch/x86/kernel/head64.c \
 	memory.o \
 	kasan.o\
 	arch/x86/kernel/init.o \
