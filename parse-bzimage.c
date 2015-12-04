@@ -56,7 +56,6 @@ struct __attribute__((__packed__)) setup_header {
         uint8_t         relocatable_kernel;
         uint8_t         _pad2[3];
         uint32_t        cmdline_size;
-	/* XXX: point of interest */
         uint32_t        hardware_subarch;
         uint64_t        hardware_subarch_data;
         uint32_t        payload_offset;
