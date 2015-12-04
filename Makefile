@@ -2,7 +2,7 @@ CFLAGS += -O2 -g
 CFLAGS += -std=gnu99 -Wall -Werror
 CFLAGS += -I include/ -I arch/x86/include/
 
-CFLAGS +=-Wl,-Tcustom.lds.S
+CFLAGS +=-Wl,-Tarch/x86/kernel/vmlinux.lds.S
 
 ifeq ($(V),1)
 	Q=
