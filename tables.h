@@ -1,136 +1,124 @@
-#ifndef _GPXE_TABLES_H
-#define _GPXE_TABLES_H
+#ifndef _LINUX_TABLES_H
+#define _LINUX_TABLES_H
 
-/** @page ifdef_harmful #ifdef considered harmful
+/**
+ * DOC: linker tables - for when #ifdefs are harmful
  *
- * Overuse of @c #ifdef has long been a problem in Etherboot.
- * Etherboot provides a rich array of features, but all these features
- * take up valuable space in a ROM image.  The traditional solution to
- * this problem has been for each feature to have its own @c #ifdef
- * option, allowing the feature to be compiled in only if desired.
+ * Overuse of C #ifdefs can be problematic for certain types of code.  Linux
+ * provides a rich array of features, but all these features take up valuable
+ * space in a kernel image. The traditional solution to this problem has been
+ * for each feature to have its own Kconfig entry and for the respective code
+ * to be wrapped around #ifdefs, allowing the feature to be compiled in only
+ * if desired.
  *
- * The problem with this is that it becomes impossible to compile, let
- * alone test, all possible versions of Etherboot.  Code that is not
- * typically used tends to suffer from bit-rot over time.  It becomes
- * extremely difficult to predict which combinations of compile-time
- * options will result in code that can even compile and link
- * correctly.
+ * The problem with this is that over time it becomes very difficult and time
+ * consuming to compile, let alone test, all possible versions of Linux. Code
+ * that is not typically used tends to suffer from bit-rot over time. It can
+ * become difficult to predict which combinations of compile-time options will
+ * result in code that can compile and link correctly.
  *
- * To solve this problem, we have adopted a new approach from
- * Etherboot 5.5 onwards.  @c #ifdef is now "considered harmful", and
- * its use should be minimised.  Separate features should be
- * implemented in separate @c .c files, and should \b always be
- * compiled (i.e. they should \b not be guarded with a @c #ifdef @c
- * MY_PET_FEATURE statement).  By making (almost) all code always
- * compile, we avoid the problem of bit-rot in rarely-used code.
+ * To solve this problem linker tables can be used on Linux, it enables you to
+ * always force compiling of features that one wishes to avoid bit-rot by while
+ * still enabling you to disable linking the feature code into the final kernel
+ * image if the features have been disabled via Kconfig. The code is derivative
+ * of gPXE table's solution embraced on gPXE >= 5 and can optionally be used in
+ * conjunction with Linux's own custom init dependency solution, originally
+ * developed for use in IOMMU. For more details on history and to see how this
+ * code evolved refer to the userspace mockup solution on github [0]. To allow
+ * for easy testing of extensions that code can be used and extended prior to
+ * inclusion in Linux. Contrary to gPXE's solution which stives to force
+ * compilation of *everything* Linux's solution allows for developers to be
+ * selective over where one should use linker tables.
  *
- * The file config.h, in combination with the @c make command line,
- * specifies the objects that will be included in any particular build
- * of Etherboot.  For example, suppose that config.h includes the line
+ * [0] https://github.com/mcgrof/table-init/
  *
- * @code
+ * To use linker tables, features should be implemented in separate C files,
+ * and should always be compiled -- they should not be guarded with a C code
+ * #ifdef CONFIG_FOO statements. By making code always compile, you avoid
+ * the problem of bit-rot in rarely-used code.
  *
- *   #define CONSOLE_SERIAL
- *   #define DOWNLOAD_PROTO_TFTP
+ * For instance, let's assume we want to always force compilation of both FOO
+ * and BAR code in the kernel but avoid linking it.  When you enable the
+ * features via Kconfig you'd end up with:
  *
- * @endcode
+ *   #define CONFIG_FOO 1
  *
- * When a particular Etherboot image (e.g. @c bin/rtl8139.zdsk) is
- * built, the options specified in config.h are used to drag in the
- * relevant objects at link-time.  For the above example, serial.o and
- * tftp.o would be linked in.
+ * You typically would then just use this on your Makefile to selectively
+ * compile and link the features:
  *
- * There remains one problem to solve: how do these objects get used?
- * Traditionally, we had code such as
+ * obj-$(CONFIG_FOO) += foo.o
  *
- * @code
+ * If using linker tables you'd instead use:
  *
- *    #ifdef CONSOLE_SERIAL
- *      serial_init();
- *    #endif
+ * XXX: is this true?
+ * obj-y += foo.o
  *
- * @endcode
+ * The reason why this works is due to the magic behind linker tables.
+ * Traditionally, we would implement integration of these features
+ * through C code as follows:
  *
- * in main.c, but this reintroduces @c #ifdef and so is a Bad Idea.
- * We cannot simply remove the @c #ifdef and make it
+ *	foo_init();
  *
- * @code
+ * You'd then have a foo.h which would have:
  *
- *   serial_init();
+ *  #ifdef CONFIG_FOO
+ *  void foo(void);
+ *  #else
+ *  static inline void foo(void) { }
+ *  #endif
  *
- * @endcode
+ * With linker tables this is no longer necessary as your init routines would
+ * be implicit, you'd instead call:
  *
- * because then serial.o would end up always being linked in.
+ *	call_init_fns();
  *
- * The solution is to use @link tables.h linker tables @endlink.
+ * call_init_fns() would call all functions present in this init table and if
+ * and only if foo.o gets linked in, then its initialisation function will be
+ * called.
  *
- */
-
-/** @file
+ * The linker script takes care of assembling the tables for us. All of our
+ * table sections have names of the format .tbl.NAME.NN. NAME designates the
+ * data structure stored in the table. For instance if you had defined a
+ * struct init_fn to data type your init sequences you would have a respective
+ * init_fns table name declared as reference for these init sequences. NN is a
+ * two-digit decimal number used to impose an "order level" upon the tables if
+ * required. NN=00 is reserved for the symbol indicating "table start", and
+ * NN=99 is reserved for the symbol indicating "table end". In order for the
+ * call_init_fns() to work behind the scenes the custom linker script would
+ * need to define the beginning of the table, the end of the table, and in
+ * between it should use SORT() to give order-level effect. To account for
+ * all of your struct init_fn init sequences, in your linker script you would
+ * have:
  *
- * Linker tables
+ *   .tbl            : {
+ *	__tbl_start_init_fns = .;
+ * 	*(SORT(.tbl.init_fns.*))
+ *	__tbl_end_init_fns = .;
  *
- * Read @ref ifdef_harmful first for some background on the motivation
- * for using linker tables.
- *
- * This file provides macros for dealing with linker-generated tables
- * of fixed-size symbols.  We make fairly extensive use of these in
- * order to avoid @c #ifdef spaghetti and/or linker symbol pollution.
- * For example, instead of having code such as
- *
- * @code
- *
- *    #ifdef CONSOLE_SERIAL
- *      serial_init();
- *    #endif
- *
- * @endcode
- *
- * we make serial.c generate an entry in the initialisation function
- * table, and then have a function call_init_fns() that simply calls
- * all functions present in this table.  If and only if serial.o gets
- * linked in, then its initialisation function will be called.  We
- * avoid linker symbol pollution (i.e. always dragging in serial.o
- * just because of a call to serial_init()) and we also avoid @c
- * #ifdef spaghetti (having to conditionalise every reference to
- * functions in serial.c).
- *
- * The linker script takes care of assembling the tables for us.  All
- * our table sections have names of the format @c .tbl.NAME.NN where
- * @c NAME designates the data structure stored in the table (e.g. @c
- * init_fns) and @c NN is a two-digit decimal number used to impose an
- * ordering upon the tables if required.  @c NN=00 is reserved for the
- * symbol indicating "table start", and @c NN=99 is reserved for the
- * symbol indicating "table end".
+ *	Other init tables can go here as well for different
+ *	structures.
+ *   }
  *
  * As an example, suppose that we want to create a "frobnicator"
  * feature framework, and allow for several independent modules to
- * provide frobnicating services.  Then we would create a frob.h
+ * provide frobnicating services. Then we would create a frob.h
  * header file containing e.g.
  *
- * @code
- *
  *   struct frobnicator {
- *      const char *name;		// Name of the frobnicator
- *	void ( *frob ) ( void ); 	// The frobnicating function itself
+ *      const char *name;
+ *	void (*frob) (void);
  *   };
  *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
- *
- *   #define __frobnicator __table_entry ( FROBNICATORS, 01 )
- *
- * @endcode
+ *   #define FROBNICATORS __table (struct frobnicator, "frobnicators")
+ *   #define __frobnicator __table_entry (FROBNICATORS, 01)
  *
  * Any module providing frobnicating services would look something
  * like
  *
- * @code
- *
  *   #include "frob.h"
  *
- *   static void my_frob ( void ) {
- *	// Do my frobnicating
- *	...
+ *   static void my_frob (void) {
+ *	... Do my frobnicating
  *   }
  *
  *   struct frob my_frobnicator __frobnicator = {
@@ -138,262 +126,227 @@
  *	.frob = my_frob,
  *   };
  *
- * @endcode
- *
  * The central frobnicator code (frob.c) would use the frobnicating
  * modules as follows
  *
- * @code
- *
  *   #include "frob.h"
  *
- *   // Call all linked-in frobnicators
- *   void frob_all ( void ) {
+ *   void frob_all(void) {
  *	struct frob *frob;
  *
- *	for_each_table ( frob, FROBNICATORS ) {
- *         printf ( "Calling frobnicator \"%s\"\n", frob->name );
- *	   frob->frob ();
+ *	for_each_table(frob, FROBNICATORS) {
+ *         printf("Calling frobnicator \"%s\"\n", frob->name);
+ *	   frob->frob();
  *	}
  *   }
- *
- * @endcode
- *
- * See init.h and init.c for a real-life example.
- *
  */
 
-#ifdef DOXYGEN
-#define __attribute__( x )
-#endif
-
-/**
- * Declare a linker table
+/*
+ * __table - Declares a linker table
  *
- * @v type		Data type
- * @v name		Table name
- * @ret table		Linker table
+ * @type: data type
+ * @name: table name
+ * 
+ * Declares a linker table.
  */
-#define __table( type, name ) ( type, name )
+#define __table(type, name) (type, name)
 
-/**
- * Get linker table data type
+/*
+ * __table_type() - get linker table data type
  *
- * @v table		Linker table
- * @ret type		Data type
+ * @table: linker table
+ *
+ * Gives you the linker table data type.
  */
-#define __table_type( table ) __table_extract_type table
-#define __table_extract_type( type, name ) type
+#define __table_type(table) __table_extract_type table
+#define __table_extract_type(type, name) type
 
-/**
- * Get linker table name
+/*
+ * __table_name - get linker table name
  *
- * @v table		Linker table
- * @ret name		Table name
+ * @table: linker table
+ *
+ * Gives you the table name.
  */
-#define __table_name( table ) __table_extract_name table
-#define __table_extract_name( type, name ) name
+#define __table_name(table) __table_extract_name table
+#define __table_extract_name(type, name) name
 
-/**
- * Get linker table section name
+/*
+ * __table_section - get linker table section name
  *
- * @v table		Linker table
- * @v idx		Sub-table index
- * @ret section		Section name
+ * @table: linker table
+ * @idx: order level, this is the sub-table index
+ *
+ * Declares the section name.
  */
-#define __table_section( table, idx ) \
-	".tbl." __table_name ( table ) "." __table_str ( idx )
-#define __table_str( x ) #x
+#define __table_section(table, idx) \
+	".tbl." __table_name (table) "." __table_str (idx)
+#define __table_str(x) #x
 
-/**
- * Get linker table alignment
+/*
+ * __table_alignment - get linker table alignment
  *
- * @v table		Linker table
- * @ret align		Alignment
+ * @table: linker table
+ *
+ * Gives you the linker table alignment.
  */
-#define __table_alignment( table ) __alignof__ ( __table_type ( table ) )
+#define __table_alignment( table ) __alignof__ (__table_type(table))
 
-/**
- * Declare a linker table entry
+/*
+ * __table_entry - declare a linker table entry
  *
- * @v table		Linker table
- * @v idx		Sub-table index
+ * @table: linker table
+ * @idx: order level, the sub-table index
  *
  * Example usage:
  *
- * @code
- *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
- *
- *   #define __frobnicator __table_entry ( FROBNICATORS, 01 )
+ *   #define FROBNICATORS __table (struct frobnicator, "frobnicators")
+ *   #define __frobnicator __table_entry(FROBNICATORS, 01)
  *
  *   struct frobnicator my_frob __frobnicator = {
  *      ...
  *   };
- *
- * @endcode
  */
-#define __table_entry( table, idx )					\
-	__attribute__ (( __section__ ( __table_section ( table, idx ) ),\
-			 __aligned__ ( __table_alignment ( table ) ) ))
+#define __table_entry(table, idx)					\
+	__attribute__ ((__section__(__table_section(table, idx)),	\
+			__aligned__(__table_alignment(table))))
 
-/**
- * Get start of linker table entries
+/*
+ * __table_entries - get start of linker table entries
  *
- * @v table		Linker table
- * @v idx		Sub-table index
- * @ret entries		Start of entries
+ * @table: linker table
+ * @idx: order level, the sub-table index
+ *
+ * This gives you the start of the respective linker table entries
  */
-#define __table_entries( table, idx ) ( {				\
-	static __table_type ( table ) __table_entries[0]		\
-		__table_entry ( table, idx ); 				\
+#define __table_entries(table, idx) ( {					\
+	static __table_type(table) __table_entries[0]			\
+		__table_entry(table, idx); 				\
 	__table_entries; } )
 
-/**
- * Get start of linker table
+/*
+ * table_start - get start of linker table
  *
- * @v table		Linker table
- * @ret start		Start of linker table
+ * @table: linker table
+ *
+ * This gives you the start of the respective linker table.
  *
  * Example usage:
  *
- * @code
+ *   #define FROBNICATORS __table (struct frobnicator, "frobnicators")
  *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
- *
- *   struct frobnicator *frobs = table_start ( FROBNICATORS );
- *
- * @endcode
+ *   struct frobnicator *frobs = table_start(FROBNICATORS);
  */
-#define table_start( table ) __table_entries ( table, 00 )
+#define table_start(table) __table_entries(table, 00)
 
-/**
- * Get end of linker table
+/*
+ * table_end - get end of linker table
  *
- * @v table		Linker table
- * @ret end		End of linker table
+ * @table: linker table
+ *
+ * This gives you the end of the respective linker table.
  *
  * Example usage:
  *
- * @code
+ *   #define FROBNICATORS __table (struct frobnicator, "frobnicators")
  *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
- *
- *   struct frobnicator *frobs_end = table_end ( FROBNICATORS );
- *
- * @endcode
+ *   struct frobnicator *frobs_end = table_end(FROBNICATORS);
  */
-#define table_end( table ) __table_entries ( table, 99 )
+#define table_end(table) __table_entries(table, 99)
 
-/**
- * Get number of entries in linker table
+/*
+ * table_num_entries - get number of entries in linker table
  *
- * @v table		Linker table
- * @ret num_entries	Number of entries in linker table
+ * @table: linker table
+ *
+ * This gives you the number of entries in linker table.
  *
  * Example usage:
  *
- * @code
+ *   #define FROBNICATORS __table(struct frobnicator, "frobnicators")
  *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
- *
- *   unsigned int num_frobs = table_num_entries ( FROBNICATORS );
- *
- * @endcode
- *
+ *   unsigned int num_frobs = table_num_entries(FROBNICATORS);
  */
-#define table_num_entries( table )					\
-	( ( unsigned int ) ( table_end ( table ) -			\
-			     table_start ( table ) ) )
+#define table_num_entries(table)					\
+	((unsigned int) (table_end(table) -				\
+			 table_start(table)))
 
-/**
- * Iterate through all entries within a linker table
+/*
+ * for_each_table_entry - iterate through all entries within a linker table
  *
- * @v pointer		Entry pointer
- * @v table		Linker table
+ * @pointer: entry pointer
+ * @table: linker table
  *
  * Example usage:
  *
- * @code
- *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
+ *   #define FROBNICATORS __table(struct frobnicator, "frobnicators")
  *
  *   struct frobnicator *frob;
  *
- *   for_each_table_entry ( frob, FROBNICATORS ) {
+ *   for_each_table_entry(frob, FROBNICATORS) {
  *     ...
  *   }
- *
- * @endcode
- *
  */
-#define for_each_table_entry( pointer, table )				\
-	for ( pointer = table_start ( table ) ;				\
-	      pointer < table_end ( table ) ;				\
-	      pointer++ )
+#define for_each_table_entry(pointer, table)				\
+	for (pointer = table_start(table);				\
+	     pointer < table_end(table);				\
+	     pointer++)
 
 /**
- * Iterate through all entries within a linker table in reverse order
+ * for_each_table_entry_reverse - iterate through linker table in reverse order
  *
- * @v pointer		Entry pointer
- * @v table		Linker table
+ * @pointer: entry pointer
+ * @table: linker table
  *
  * Example usage:
  *
- * @code
- *
- *   #define FROBNICATORS __table ( struct frobnicator, "frobnicators" )
+ *   #define FROBNICATORS __table(struct frobnicator, "frobnicators")
  *
  *   struct frobnicator *frob;
  *
- *   for_each_table_entry_reverse ( frob, FROBNICATORS ) {
+ *   for_each_table_entry_reverse(frob, FROBNICATORS) {
  *     ...
  *   }
- *
- * @endcode
- *
  */
-#define for_each_table_entry_reverse( pointer, table )			\
-	for ( pointer = ( table_end ( table ) - 1 ) ;			\
-	      pointer >= table_start ( table ) ;			\
-	      pointer-- )
+#define for_each_table_entry_reverse(pointer, table)			\
+	for (pointer = (table_end(table) - 1 );				\
+	     pointer >= table_start(table);				\
+	     pointer--)
 
-/******************************************************************************
+/*
  *
  * Intel's C compiler chokes on several of the constructs used in this
- * file.  The workarounds are ugly, so we use them only for an icc
+ * file. The workarounds are ugly, so we use them only for an icc
  * build.
- *
  */
 #define ICC_ALIGN_HACK_FACTOR 128
 #ifdef __ICC
 
 /*
  * icc miscompiles zero-length arrays by inserting padding to a length
- * of two array elements.  We therefore have to generate the
+ * of two array elements. We therefore have to generate the
  * __table_entries() symbols by hand in asm.
- *
  */
 #undef __table_entries
-#define __table_entries( table, idx ) ( {				\
-	extern __table_type ( table )					\
-		__table_temp_sym ( idx, __LINE__ ) []			\
-		__table_entry ( table, idx ) 				\
-		asm ( __table_entries_sym ( table, idx ) );		\
-	__asm__ ( ".ifndef %c0\n\t"					\
-		  ".section " __table_section ( table, idx ) "\n\t"	\
+#define __table_entries(table, idx) ( {					\
+	extern __table_type(table)					\
+		__table_temp_sym(idx, __LINE__) []			\
+		__table_entry(table, idx) 				\
+		asm (__table_entries_sym(table, idx));			\
+	__asm__( ".ifndef %c0\n\t"					\
+		  ".section " __table_section(table, idx) "\n\t"	\
 		  ".align %c1\n\t"					\
 	          "\n%c0:\n\t"						\
 		  ".previous\n\t" 					\
 		  ".endif\n\t"						\
-		  : : "i" ( __table_temp_sym ( idx, __LINE__ ) ),	\
-		      "i" ( __table_alignment ( table ) ) );		\
+		  : : "i" (__table_temp_sym(idx, __LINE__ )),		\
+		      "i" (__table_alignment(table)));			\
 	__table_temp_sym ( idx, __LINE__ ); } )
-#define __table_entries_sym( table, idx )				\
-	"__tbl_" __table_name ( table ) "_" #idx
-#define __table_temp_sym( a, b )					\
-	___table_temp_sym( __table_, a, _, b )
-#define ___table_temp_sym( a, b, c, d ) a ## b ## c ## d
+#define __table_entries_sym(table, idx)					\
+	"__tbl_" __table_name(table) "_" #idx
+#define __table_temp_sym(a, b)						\
+	___table_temp_sym(__table_, a, _, b)
+#define ___table_temp_sym(a, b, c, d) a ## b ## c ## d
 
 /*
  * icc ignores __attribute__ (( aligned (x) )) when it is used to
@@ -406,8 +359,8 @@
  *
  */
 #undef __table_alignment
-#define __table_alignment( table ) \
-	( ICC_ALIGN_HACK_FACTOR * __alignof__ ( __table_type ( table ) ) )
+#define __table_alignment(table) \
+	(ICC_ALIGN_HACK_FACTOR * __alignof__(__table_type(table)))
 
 /*
  * Because of the alignment hack, we must ensure that the compiler
@@ -422,11 +375,11 @@
  * elements).
  */
 #undef __table_section
-#define __table_section( table, idx ) \
-	".tbl." __table_name ( table ) "." __table_str ( idx ) \
-	"." __table_xstr ( __LINE__ )
-#define __table_xstr( x ) __table_str ( x )
+#define __table_section(table, idx) \
+	".tbl." __table_name(table) "." __table_str(idx) \
+	"." __table_xstr(__LINE__)
+#define __table_xstr(x) __table_str(x)
 
 #endif /* __ICC */
 
-#endif /* _GPXE_TABLES_H */
+#endif /* _LINUX_TABLES_H */

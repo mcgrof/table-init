@@ -169,7 +169,7 @@ SECTIONS
 	 * are defined in init.h and implemented in sort-init.c.
 	 */
 	__tbl_x86_start_init_fns = .;
-	*(SORT(.tbl.init_fns.*))
+	*(SORT(.tbl.x86_init_fns.*))
 	__tbl_x86_end_init_fns = .;
 
 	/* ... etc ... */

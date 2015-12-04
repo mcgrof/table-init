@@ -127,7 +127,7 @@ enum x86_init_fn_flags {
 };
 
 /** Initialisation function table */
-#define INIT_FNS __table(struct x86_init_fn, "init_fns")
+#define INIT_FNS __table(struct x86_init_fn, "x86_init_fns")
 
 /** Declare an initialisation functon */
 #define __init_fn( init_order ) __table_entry (INIT_FNS, init_order)
