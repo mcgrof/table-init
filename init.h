@@ -91,7 +91,7 @@
  * 	init routine who's respective detect routine we have set this
  * 	depends callback to. This is only used for sorting purposes.
  *	If you do not have a depend callback set its assumed the order level
- *	(__init_fn(level)) set by the init routine suffices to set the order
+ *	(__x86_init_fn(level)) set by the init routine suffices to set the order
  *	for when the feature's respective callbacks are called with respect to
  *	other calls. Sorting of init calls between on the same order level is
  *	determined by linker order, determined by order listed on the Makefile.
@@ -129,16 +129,16 @@ enum x86_init_fn_flags {
 	INIT_DETECTED = BIT(1),
 };
 
-/** Initialisation function table */
-#define INIT_FNS __table(struct x86_init_fn, "x86_init_fns")
+/* The x86 initialisation function table */
+#define X86_INIT_FNS __table(struct x86_init_fn, "x86_init_fns")
 
-/** Declare an initialisation functon */
-#define __init_fn( init_order ) __table_entry (INIT_FNS, init_order)
+/* Used to declares an x86 initialization table */
+#define __x86_init_fn(order_level) __table_entry(X86_INIT_FNS, order_level)
 
-#define INIT_EARLY	01	/**< Early initialisation */
-#define INIT_SERIAL	02	/**< Serial driver initialisation */
-#define INIT_CONSOLE	03	/**< Console initialisation */
-#define INIT_NORMAL	04	/**< Normal initialisation */
+/* Init order levels, we can start at 01 but reserve 01-09 for now */
+#define X86_INIT_ORDER_EARLY	10
+#define X86_INIT_ORDER_NORMAL	30
+#define X86_INIT_ORDER_LATE	50
 
 #define X86_INIT(__name,						\
 		 __level,						\
@@ -148,7 +148,7 @@ enum x86_init_fn_flags {
 		 __early_init,						\
 		 __setup_arch,						\
 		 __late_init)						\
-	struct x86_init_fn __init_fn_##__name __init_fn(__level) = {	\
+	struct x86_init_fn __x86_init_fn_##__name __x86_init_fn(__level) = { \
 		.order_level = __level,					\
 		.supp_hardware_subarch = __supp_hardware_subarch,	\
 		.detect = __detect,					\
@@ -166,7 +166,7 @@ enum x86_init_fn_flags {
 		       __early_init,					\
 		       __setup_arch,					\
 		       __late_init)					\
-	X86_INIT(__name, INIT_EARLY, __supp_hardware_subarch,		\
+	X86_INIT(__name, X86_INIT_ORDER_EARLY, __supp_hardware_subarch,	\
 		 __detect, __depend,					\
 		 __early_init, __setup_arch, __late_init);
 
@@ -177,7 +177,7 @@ enum x86_init_fn_flags {
 		       __early_init,					\
 		       __setup_arch,					\
 		       __late_init)					\
-	X86_INIT(__name, INIT_NORMAL, __supp_hardware_subarch,		\
+	X86_INIT(__name, X86_INIT_ORDER_NORMAL, __supp_hardware_subarch,\
 		 __detect, __depend,					\
 		 __early_init, __setup_arch, __late_init);
 

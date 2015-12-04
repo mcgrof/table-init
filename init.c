@@ -22,11 +22,11 @@ void early_init(void)
 	int ret;
 	struct x86_init_fn *init_fn;
 
-	unsigned int num_inits = table_num_entries(INIT_FNS);
+	unsigned int num_inits = table_num_entries(X86_INIT_FNS);
 
 	printf("Number of init entries: %d\n", num_inits);
 
-	for_each_table_entry(init_fn, INIT_FNS) {
+	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if (!x86_init_supports_subarch(init_fn))
 			continue;
 		if (!init_fn->detect)
@@ -52,7 +52,7 @@ void late_init(void)
 {
 	struct x86_init_fn *init_fn;
 
-	for_each_table_entry(init_fn, INIT_FNS) {
+	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->late_init) {
 			printf("Running late init for %s ...\n", init_fn->name);
 			init_fn->late_init();
@@ -65,7 +65,7 @@ void setup_arch_init(void)
 {
 	struct x86_init_fn *init_fn;
 
-	for_each_table_entry(init_fn, INIT_FNS) {
+	for_each_table_entry(init_fn, X86_INIT_FNS) {
 		if ((init_fn->flags & INIT_DETECTED) && init_fn->setup_arch) {
 			printf("Running setup_arch for %s ...\n", init_fn->name);
 			init_fn->setup_arch();

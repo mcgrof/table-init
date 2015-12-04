@@ -99,6 +99,13 @@
  *	structures.
  *   }
  *
+ * The order-level is really only a helper, if only one order level is
+ * used, the next contributing factor to order is the order of the code
+ * in the C file, and the order of the objects in the Makefile. Using
+ * an order level then should not really be needed in most cases, its
+ * use however enables to compartamentalize code into tables where ordering
+ * through C file or through the Makefile would otherwise be very difficult.
+ *
  * As an example, suppose that we want to create a "frobnicator"
  * feature framework, and allow for several independent modules to
  * provide frobnicating services. Then we would create a frob.h
