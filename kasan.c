@@ -14,9 +14,4 @@ void kasan_init(void)
 	printf("Calling setup_arch work for Kasan...\n");
 }
 
-struct x86_init_fn kasan_init_fn __init_fn(INIT_EARLY) = {
-	.supp_hardware_subarch = BIT(X86_SUBARCH_PC),
-	.early_init = kasan_early_init,
-	.setup_arch = kasan_init,
-	.name = "Kasan",
-};
+X86_INIT_EARLY_PC(kasan, NULL, NULL, kasan_early_init, kasan_init, NULL);

@@ -15,9 +15,4 @@ bool detect_pci(void) {
 	return true;
 }
 
-struct x86_init_fn pci_init_fn __init_fn(INIT_NORMAL) = {
-	.supp_hardware_subarch = X86_SUBARCH_ALL_SUBARCHS,
-	.detect = detect_pci,
-	.early_init = early_init_pci,
-	.name = "PCI buses",
-};
+X86_INIT_NORMAL_ALL(pci, detect_pci, NULL, early_init_pci, NULL, NULL);

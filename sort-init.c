@@ -57,19 +57,47 @@ void check_table_entries(struct x86_init_fn *start,
 		x = find_dependents_of(start, finish, q);
 		if (p == x) {
 			printf("CYCLIC DEPENDENCY FOUND! %pS depends on %pS and vice-versa. BREAKING IT.\n",
-			       p->detect, q->detect);
+			       p->name, q->name);
 			/* Heavy handed way..*/
 			x->depend = 0;
 		}
 	}
 
+	/*
+	 * Validate sorting semantics.
+	 *
+	 * p depends on q so:
+	 * 	- q must run first, so q < p. If q > p that's an issue
+	 * 	  as its saying p must run prior to q. We already sorted
+	 * 	  this table, this is a problem.
+	 *
+	 * 	- q's order level must be <= than p's as it should run first
+	 */
 	for (p = start; p < finish; p++) {
-		q = find_dependents_of(p, finish, p);
 		if (!p->depend)
 			continue;
+		/*
+		 * Be pedantic and do a full search on the entire table,
+		 * if we need further validation, after this is called
+		 * one could use an optimized version which just searches
+		 * on find_dependents_of(p, finish, p), as we would have
+		 * guarantee on proper ordering both at the dependency level
+		 * and by order level.
+		 */
+		q = find_dependents_of(start, finish, p);
 		if (q && q > p) {
-			printf("EXECUTION ORDER INVALID! %pS should be called before %pS!\n",
-			       p->detect, q->detect);
+			printf("EXECUTION ORDER INVALID! %s should be called before %s!\n",
+			       p->name, q->name);
+		}
+
+		/*
+		 * Technically this would still work as the memmove() would
+		 * have forced the dependency to run first, however we want
+		 * strong semantics, so lets avoid these.
+		 */
+		if (q && q->order_level > p->order_level) {
+			printf("INVALID ORDER LEVEL! %s should have an order level <= be called before %s!\n",
+			       p->name, q->name);
 		}
 	}
 }

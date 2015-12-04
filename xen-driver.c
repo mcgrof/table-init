@@ -9,9 +9,5 @@ static void early_xen_init_driver(void) {
 	sleep(2);
 }
 
-struct x86_init_fn driver_xen_init_fn __init_fn(INIT_NORMAL) = {
-	.supp_hardware_subarch = BIT(X86_SUBARCH_XEN),
-	.depend = detect_pci,
-	.early_init = early_xen_init_driver,
-	.name = "Xen Driver",
-};
+X86_INIT_NORMAL_XEN(xen_driver, NULL, detect_pci,
+		    early_xen_init_driver, NULL, NULL);

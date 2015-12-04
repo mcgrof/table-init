@@ -44,6 +44,9 @@
  * a two-digit decimal number to impose an ordering relative to other
  * features when required.
  *
+ * @order_level: linker order level, this corresponds to the table
+ * 	section sub-table index, we record this only for semantic
+ * 	validation purposes.
  * @supp_hardware_subarch: Must be set, it represents the bitmask of supported
  *	subarchitectures.  We require each struct x86_init_fn to have this set
  *	to require developer considerations for each supported x86
@@ -89,16 +92,6 @@
  *	for when the feature's respective callbacks are called with respect to
  *	other calls. Sorting of init calls between on the same order level is
  *	determined by linker order, determined by order listed on the Makefile.
- *
- *	XXX: we can't enforce validity of the order level as the order level is
- *	an annotation and used as part of the table name. One possibility to
- *	enforce checking is to extend struct x86_init_fn with a numeric order
- *	level, and use macro declarations for declaring order level both for
- *	the table name and x86_init_fn explicit struct numeric order. If we
- *	want to avoid extending the struct we could also use Coccinelle,
- *	however we can't use C annotations on Coccinelle, but Coccinelle does
- *	understand macro declarers such as DECLARE_MUTEX(), one could use
- *	SmPL rules with expected uses of declarers.
  * @early_init: if set would be run during before x86_64_start_reservations().
  *	Memory is not yet available.
  * @setup_arch: if set would be run during setup_arch().
@@ -107,6 +100,7 @@
  * @flags: private internal flags
  */
 struct x86_init_fn {
+	__u32 order_level;
 	__u32 supp_hardware_subarch;
 	bool (*detect)(void);
 	bool (*depend)(void);
@@ -142,6 +136,87 @@ enum x86_init_fn_flags {
 #define INIT_SERIAL	02	/**< Serial driver initialisation */
 #define INIT_CONSOLE	03	/**< Console initialisation */
 #define INIT_NORMAL	04	/**< Normal initialisation */
+
+#define X86_INIT(__name,						\
+		 __level,						\
+		 __supp_hardware_subarch,				\
+		 __detect,						\
+		 __depend,						\
+		 __early_init,						\
+		 __setup_arch,						\
+		 __late_init)						\
+	struct x86_init_fn __init_fn_##__name __init_fn(__level) = {	\
+		.order_level = __level,					\
+		.supp_hardware_subarch = __supp_hardware_subarch,	\
+		.detect = __detect,					\
+		.depend = __depend,					\
+		.early_init = __early_init,				\
+		.setup_arch = __setup_arch,				\
+		.late_init = __late_init,				\
+		.name = #__name,					\
+	};
+
+#define X86_INIT_EARLY(__name,						\
+		       __supp_hardware_subarch,				\
+		       __detect,					\
+		       __depend,					\
+		       __early_init,					\
+		       __setup_arch,					\
+		       __late_init)					\
+	X86_INIT(__name, INIT_EARLY, __supp_hardware_subarch,		\
+		 __detect, __depend,					\
+		 __early_init, __setup_arch, __late_init);
+
+#define X86_INIT_NORMAL(__name,						\
+		       __supp_hardware_subarch,				\
+		       __detect,					\
+		       __depend,					\
+		       __early_init,					\
+		       __setup_arch,					\
+		       __late_init)					\
+	X86_INIT(__name, INIT_NORMAL, __supp_hardware_subarch,		\
+		 __detect, __depend,					\
+		 __early_init, __setup_arch, __late_init);
+
+#define X86_INIT_EARLY_ALL(__name,					\
+			   __detect,					\
+			   __depend,					\
+			   __early_init,				\
+			   __setup_arch,				\
+			   __late_init)					\
+	X86_INIT_EARLY(__name, X86_SUBARCH_ALL_SUBARCHS,		\
+		       __detect, __depend,				\
+		       __early_init, __setup_arch, __late_init);
+
+#define X86_INIT_EARLY_PC(__name,					\
+			  __detect,					\
+			  __depend,					\
+			  __early_init,					\
+			  __setup_arch,					\
+			  __late_init)					\
+	X86_INIT_EARLY(__name, BIT(X86_SUBARCH_PC),			\
+		 __detect, __depend,					\
+		 __early_init, __setup_arch, __late_init);
+
+#define X86_INIT_NORMAL_ALL(__name,					\
+			    __detect,					\
+			    __depend,					\
+			    __early_init,				\
+			    __setup_arch,				\
+			    __late_init)				\
+	X86_INIT_NORMAL(__name, X86_SUBARCH_ALL_SUBARCHS,		\
+		        __detect, __depend,				\
+		        __early_init, __setup_arch, __late_init);
+
+#define X86_INIT_NORMAL_XEN(__name,					\
+			    __detect,					\
+			    __depend,					\
+			    __early_init,				\
+			    __setup_arch,				\
+			    __late_init)				\
+	X86_INIT_NORMAL(__name, BIT(X86_SUBARCH_XEN),			\
+		        __detect, __depend,				\
+		        __early_init, __setup_arch, __late_init);
 
 void early_init(void);
 void late_init(void);
