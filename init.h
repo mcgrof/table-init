@@ -1,3 +1,6 @@
+#ifndef __X86_INIT_TABLES_H
+#define __X86_INIT_TABLES_H
+
 #include <stdbool.h>
 #include <linux/types.h>
 
@@ -237,3 +240,5 @@ void sort_table(struct x86_init_fn *start,
 		      struct x86_init_fn *finish);
 void check_table_entries(struct x86_init_fn *start,
 			 struct x86_init_fn *finish);
+
+#endif /* __X86_INIT_TABLES_H */
