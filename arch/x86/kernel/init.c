@@ -1,4 +1,6 @@
+#include <linux/bug.h>
 #include <linux/kernel.h>
+
 #include <asm/x86_init_fn.h>
 #include <asm/boot.h>
 
