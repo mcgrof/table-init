@@ -38,7 +38,7 @@ OBJS =  sort-init.o \
 	x86.o \
 	memory.o \
 	kasan.o\
-	init.o \
+	arch/x86/kernel/init.o \
 	pci.o \
 	beta.o \
 	alpha.o \
