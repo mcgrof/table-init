@@ -4,6 +4,7 @@
 #include <asm/x86_init_fn.h>
 #include <asm/bootparam.h>
 #include <asm/boot.h>
+#include <asm/setup.h>
 
 static bool x86_init_fn_supports_subarch(struct x86_init_fn *fn)
 {
