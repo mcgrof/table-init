@@ -33,7 +33,7 @@ parse-bzimage: parse-bzimage.c
 # *(SORT(.tbl.init_fns.*))
 #
 # The name of the struct places no effect to the actual linker order.
-OBJS =  sort-init.o \
+OBJS =  arch/x86/kernel/sort-init.o \
 	start_kernel.o \
 	arch/x86/kernel/head64.c \
 	memory.o \
